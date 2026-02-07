@@ -6,7 +6,9 @@ const optimizeImages = async (req, res, next) => {
   if (!req.files && !req.file) return next();
 
   const processFile = async (file) => {
-    const originalPath = file.path;
+    const originalPath = path.isAbsolute(file.path)
+      ? file.path
+      : path.join(__dirname, file.path);
     const optimizedFilename = `opt-${Date.now()}-${file.originalname.split(".")[0]}.webp`;
     const optimizedPath = path.join(
       path.dirname(originalPath),

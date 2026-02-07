@@ -4,6 +4,11 @@ const { nanoid } = require("nanoid");
 
 const DATA_DIR = path.join(__dirname, "data");
 
+// Ensure data directory exists
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
 const getFilePath = (entity) => path.join(DATA_DIR, `${entity}.json`);
 
 const readData = (entity) => {

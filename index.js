@@ -6,7 +6,11 @@ const multer = require("multer");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./uploads");
+    const uploadPath = path.join(__dirname, "uploads");
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
     cb(null, `${Date.now()}-${file.originalname}`);
@@ -29,9 +33,10 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/uploads", express.static("uploads"));
+const uploadsPath = path.join(__dirname, "uploads");
+app.use("/uploads", express.static(uploadsPath));
 
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 
 // Generic GET all
 const entities = ["beans", "machines", "syrups", "sauces", "blogs", "orders"];
@@ -190,5 +195,21 @@ app.put("/orders/:identifier", (req, res) => {
   res.json({ message: "Order updated successfully", payload: updatedItem });
 });
 
-app.listen(3000);
+const PORT = process.env.PORT || 3000;
+const server = app.listen(PORT, () => {
+  console.log(`[${new Date().toISOString()}] Server running on port ${PORT}`);
+});
 
+// Graceful shutdown handling
+const gracefulShutdown = () => {
+  console.log(
+    `[${new Date().toISOString()}] Received shutdown signal. Closing server...`,
+  );
+  server.close(() => {
+    console.log("Server closed.");
+    process.exit(0);
+  });
+};
+
+process.on("SIGTERM", gracefulShutdown);
+process.on("SIGINT", gracefulShutdown);
