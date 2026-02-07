@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Coffee Lab Admin - Add New Product</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#483628",
+                        "background-light": "#fafafa",
+                        "background-dark": "#1c1e22",
+                        "accent-green": "#7CA17C",
+                        "accent-red": "#CC7070",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-active {
+            background-color: rgba(72, 54, 40, 0.1);
+            color: #483628;
+            border-right: 3px solid #483628;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e5e7eb;
+            border-radius: 10px;
+        }
+        .dynamic-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .image-preview-card { position: relative; width: 6rem; height: 6rem; border-radius: 0.75rem; border-width: 2px; border-color: #f3f4f6; overflow: hidden; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); background-color: white; transition: all 0.2s; }
+        .image-preview-card:hover { border-color: #483628; }
+        .image-preview-card img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
+        .image-controls { position: absolute; inset: 0; background-color: rgba(0, 0, 0, 0.4); opacity: 0; display: flex; align-items: center; justify-content: center; gap: 0.25rem; transition: all 0.2s; backdrop-filter: blur(2px); }
+        .image-preview-card:hover .image-controls { opacity: 1; }
+        .image-control-btn { padding: 0.25rem; border-radius: 0.5rem; background-color: rgba(255, 255, 255, 0.2); color: white; transition: all 0.2s; }
+        .image-control-btn:hover { background-color: white; color: #483628; }
+        .image-control-btn span { font-size: 16px; }
+        
+        #lightbox { position: fixed; inset: 0; z-index: 100; background-color: rgba(0, 0, 0, 0.95); backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; padding: 2rem; transition: all 0.3s; }
+        #lightbox.active { display: flex; }
+        #lightbox img { max-width: 100%; max-height: 100%; border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transform: scale(0.95); transition: transform 0.3s; }
+        #lightbox.active img { transform: scale(1); }
+
+        .toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.75rem; pointer-events: none; }
+        .toast { 
+            pointer-events: auto;
+        }
+        
+        .toast-progress {
+            position: absolute; bottom: 0; left: 0; height: 3px; width: 100%;
+            background: rgba(0,0,0,0.05);
+        }
+        .toast-progress-bar {
+            height: 100%; width: 100%; transform-origin: left;
+            transition: transform linear;
+        }
+        .toast-success .toast-progress-bar { background: #7CA17C; }
+        .toast-error .toast-progress-bar { background: #CC7070; }
+
+        /* Lightbox */
+        #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 2rem; cursor: zoom-out; }
+        #lightbox.active { display: flex; }
+        #lightbox img { max-width: 90%; max-height: 90%; border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        #lightbox.active img { transform: scale(1); }
+
+        .image-preview-card { position: relative; width: 8rem; height: 8rem; border-radius: 0.75rem; border-width: 2px; border-color: #f3f4f6; overflow: hidden; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); background-color: white; transition: all 0.2s; }
+        .image-controls { position: absolute; inset: 0; background-color: rgba(0, 0, 0, 0.4); opacity: 0; display: flex; align-items: center; justify-content: center; gap: 0.25rem; transition: all 0.2s; backdrop-filter: blur(2px); }
+
+        /* Sidebar Responsive Styles */
+        .sidebar { transition: transform 0.3s ease; }
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); z-index: 1001; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0 !important; }
+        }
+        .sidebar-overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4); 
+            backdrop-filter: blur(4px); z-index: 1000; 
+            display: none; opacity: 0; transition: opacity 0.3s ease; 
+        }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+    </style>
+</head>
+    <!-- Mobile Header -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 bg-white dark:bg-background-dark border-b border-gray-100 dark:border-gray-800 z-50 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <img src="logo.png" alt="Logo" class="w-8 h-8 object-contain">
+            <h1 class="text-sm font-bold tracking-tight text-primary uppercase">Coffee Lab</h1>
+        </div>
+        <button onclick="toggleSidebar()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <aside id="sidebar" class="sidebar w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-background-dark flex flex-col fixed h-full z-[1001]">
+        <div class="p-6">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center">
+                    <img src="logo.png" alt="Coffee Lab Logo" class="w-full h-auto">
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold tracking-tight text-primary uppercase">Coffee Lab</h1>
+                    <p class="text-[10px] text-gray-500 font-medium">ADMIN PANEL</p>
+                </div>
+            </div>
+        </div>
+        <nav class="flex-1 mt-4 px-3 space-y-1">
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium sidebar-active rounded-lg transition-all group" href="index.html">
+                <span class="material-symbols-outlined text-[20px]">inventory_2</span>
+                Products
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="blogs.html">
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">article</span>
+                Blog
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="orders.html">
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">shopping_cart</span>
+                Orders
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-100 dark:border-gray-800">
+            <button class="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group">
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">logout</span>
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content flex-1 ml-64 min-h-screen flex flex-col pt-16 lg:pt-0">
+        <form id="productForm" onsubmit="handleSubmit(event)">
+            <header class="bg-white/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 lg:top-0 z-20 border-b border-gray-100 dark:border-gray-800 px-4 lg:px-8 py-4 lg:py-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 id="pageTitle" class="text-2xl lg:text-3xl font-black text-primary tracking-tight">Add New Product</h2>
+                        <p class="text-xs lg:text-sm text-gray-500 mt-0.5 lg:mt-1">Configure details for a new item in your inventory</p>
+                    </div>
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <a href="index.html" class="px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 transition-colors">Cancel</a>
+                        <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold transition-transform active:scale-95 shadow-lg shadow-primary/20 flex-1 sm:flex-none">
+                            Save Product
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="px-4 lg:px-8 py-4 lg:py-8 space-y-8 w-full">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">1. Basic Information</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Product Name</label>
+                                    <input id="name" required class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="e.g. Lelit Bianca V3" type="text" oninput="generateSlug()"/>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Slug (URL Path)</label>
+                                    <div class="relative">
+                                        <input id="slug" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="lelit-bianca-v3" type="text"/>
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 text-sm">edit</span>
+                                    </div>
+                                    <p class="text-[10px] text-gray-400 mt-1 ml-1">Generated automatically via Name</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Description</label>
+                                    <textarea id="description" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Describe the product's features, history, and usage..." rows="6"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">4. Media Assets</h3>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Upload Images</label>
+                                <div class="space-y-3">
+                                    <input type="file" id="images" name="images" multiple class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
+                                    <div id="imagePreview" class="flex flex-wrap gap-2 mt-4"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="technicalSection" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">5. Technical Data</h3>
+                            <div class="space-y-6">
+                                <div id="beans-only" class="space-y-4 hidden">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Roast Level</label>
+                                            <input id="roast_level" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="e.g. Light"/>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Grind Type</label>
+                                            <input id="grind_type" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="e.g. Whole Bean"/>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Cupping Notes (comma separated)</label>
+                                        <input id="cupping_notes" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="Fruity, Floral, Chocolate"/>
+                                    </div>
+                                </div>
+
+                                <div id="machines-only" class="space-y-6 hidden">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Model</label>
+                                        <input id="model" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="e.g. V3 Special"/>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Specifications</label>
+                                            <div id="specsContainer"></div>
+                                            <button type="button" onclick="addDynamicRow('specsContainer')" class="text-xs font-bold text-primary mt-2 flex items-center gap-1">+ Add Spec</button>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Features</label>
+                                            <div id="featuresContainer"></div>
+                                            <button type="button" onclick="addDynamicRow('featuresContainer')" class="text-xs font-bold text-primary mt-2 flex items-center gap-1">+ Add Feature</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="consumables-only" class="space-y-4 hidden">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Size</label>
+                                            <input id="size" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="e.g. 750ml"/>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Flavour Profile</label>
+                                            <input id="flavour_profile" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="e.g. Vanilla"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Keywords / Tags</label>
+                                    <input id="keywords" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="manual, espresso, specialty" type="text"/>
+                                    <p class="text-[10px] text-gray-400 mt-1.5 ml-1 italic">Separate tags with commas</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">2. Pricing & Type</h3>
+                            <div class="space-y-4">
+                                <div id="priceSection">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Price (BDT)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">৳</span>
+                                        <input id="price" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg pl-8 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium" placeholder="0.00" type="number"/>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Discount (%)</label>
+                                    <div class="flex gap-2">
+                                        <div class="relative flex-1">
+                                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs">OFF</span>
+                                            <input id="discountPercentage" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium" placeholder="0" type="number" step="0.1"/>
+                                        </div>
+                                        <button type="button" onclick="applyDiscount()" class="px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-lg text-xs font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">Apply</button>
+                                    </div>
+                                </div>
+                                <div id="variantsSection" class="hidden">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Product Variants (Size & Price)</label>
+                                    <div id="variantsContainer" class="space-y-2"></div>
+                                    <button type="button" onclick="addVariantRow()" class="text-xs font-bold text-primary mt-2 flex items-center gap-1">+ Add Variant</button>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Product Type</label>
+                                    <select id="type" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" onchange="handleTypeChange()">
+                                        <option value="machines">Machine</option>
+                                        <option value="beans">Bean</option>
+                                        <option value="syrups">Syrup</option>
+                                        <option value="sauces">Sauce</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Brand</label>
+                                    <input id="brand" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Brand Name" type="text" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">3. E-commerce & Stock</h3>
+                            <div class="space-y-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-700 dark:text-gray-200">Is Featured</p>
+                                        <p class="text-[11px] text-gray-500">Enable homepage highlight</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input id="isFeatured" class="sr-only peer" type="checkbox"/>
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-700 dark:text-gray-200">In Stock Status</p>
+                                        <p class="text-[11px] text-gray-500">Show as available</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input id="inStock" checked class="sr-only peer" type="checkbox"/>
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <!-- Lightbox Modal -->
+    <!-- Lightbox -->
+    <div id="lightbox" onclick="this.classList.remove('active')">
+        <button class="absolute top-6 right-8 text-white/50 hover:text-white transition-all">
+            <span class="material-symbols-outlined text-4xl">close</span>
+        </button>
+        <img src="" alt="Enlarged view" onclick="event.stopPropagation()">
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const productId = params.get('id');
+        const productType = params.get('type') || 'beans';
+        let allImages = []; // Array of { type: 'existing' | 'new', data: string | File }
+        let isDirty = false;
+        let isInitializing = false;
+
+        function openLightbox(src) {
+            const lb = document.getElementById('lightbox');
+            lb.querySelector('img').src = src;
+            lb.classList.add('active');
+        }
+
+        // Close on ESC
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') document.getElementById('lightbox').classList.remove('active');
+        });
+
+        // Dirty state tracking
+        window.addEventListener('beforeunload', (e) => {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        function markDirty() {
+            if (!isDirty && !isInitializing) {
+                isDirty = true;
+                console.log('Form is now dirty');
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `flex items-center w-full max-w-xs p-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 toast transition-all duration-500 opacity-0 translate-x-10`;
+            toast.setAttribute('role', 'alert');
+            
+            const iconColor = type === 'success' ? 'text-primary' : 'text-accent-red';
+            
+            toast.innerHTML = `
+                <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 dark:bg-gray-700">
+                    <span class="material-symbols-outlined ${iconColor} !text-xl">${type === 'success' ? 'check_circle' : 'error'}</span>
+                </div>
+                <div class="ms-3 text-sm font-medium text-gray-600 dark:text-gray-300">${message}</div>
+                <button type="button" onclick="this.parentElement.remove()" class="ms-auto flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-lg h-8 w-8 focus:outline-none" aria-label="Close">
+                    <span class="sr-only">Close</span>
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/>
+                    </svg>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-x-10');
+            }, 10);
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-10');
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        function applyDiscount() {
+            const priceEl = document.getElementById('price');
+            const discountEl = document.getElementById('discountPercentage');
+            const price = parseFloat(priceEl.value);
+            const discount = parseFloat(discountEl.value);
+
+            if (isNaN(price) || price <= 0) {
+                showToast('Please enter a valid price first', 'error');
+                return;
+            }
+
+            if (isNaN(discount) || discount < 0 || discount > 100) {
+                showToast('Please enter a valid discount percentage (0-100)', 'error');
+                return;
+            }
+
+            const newPrice = price * (1 - discount / 100);
+            priceEl.value = Math.round(newPrice);
+            showToast(`Discount applied! New price: ৳${Math.round(newPrice)}`);
+            markDirty();
+        }
+
+        function handleTypeChange(isInitialLoad = false) {
+            const type = document.getElementById('type').value;
+            document.getElementById('beans-only').classList.add('hidden');
+            document.getElementById('machines-only').classList.add('hidden');
+            document.getElementById('consumables-only').classList.add('hidden');
+            
+            // Variants vs Single Price
+            const isConsumable = ['beans', 'syrups', 'sauces'].includes(type);
+            document.getElementById('priceSection').classList.toggle('hidden', isConsumable);
+            document.getElementById('variantsSection').classList.toggle('hidden', !isConsumable);
+
+            if (type === 'beans') document.getElementById('beans-only').classList.remove('hidden');
+            else if (type === 'machines') document.getElementById('machines-only').classList.remove('hidden');
+            else if (type === 'syrups' || type === 'sauces') document.getElementById('consumables-only').classList.remove('hidden');
+            
+            // Add default variant row if empty AND not loading existing data
+            if (isConsumable && !isInitialLoad && document.getElementById('variantsContainer').children.length === 0) {
+                addVariantRow();
+            }
+        }
+
+        function addVariantRow(size = '', price = '') {
+            const container = document.getElementById('variantsContainer');
+            const div = document.createElement('div');
+            div.className = "dynamic-row";
+            div.innerHTML = `
+                <input type="text" placeholder="Size (e.g. 250gm)" value="${size}" class="flex-[2] bg-gray-50 border-gray-200 rounded-lg text-xs p-2">
+                <input type="number" placeholder="Price" value="${price}" class="flex-1 bg-gray-50 border-gray-200 rounded-lg text-xs p-2">
+                <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 hover:text-accent-red"><span class="material-symbols-outlined text-sm">close</span></button>
+            `;
+            container.appendChild(div);
+        }
+
+        function addDynamicRow(containerId, key = '', value = '') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = "dynamic-row";
+            div.innerHTML = `
+                <input type="text" placeholder="Key" value="${key}" class="flex-1 bg-gray-50 border-gray-200 rounded-lg text-xs p-2">
+                <input type="text" placeholder="Value" value="${value}" class="flex-1 bg-gray-50 border-gray-200 rounded-lg text-xs p-2">
+                <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 hover:text-accent-red"><span class="material-symbols-outlined text-sm">close</span></button>
+            `;
+            container.appendChild(div);
+        }
+
+        function collectDynamicProps(containerId) {
+            const props = {};
+            const rows = document.querySelectorAll(`#${containerId} .dynamic-row`);
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const key = inputs[0].value.trim();
+                const val = inputs[1].value.trim();
+                if (key) props[key] = val;
+            });
+            return props;
+        }
+
+        function generateSlug() {
+            if (productId) return; // Don't auto-gen if editing
+            const name = document.getElementById('name').value;
+            const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            document.getElementById('slug').value = slug || 'new-product';
+        }
+
+        function renderImages() {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+            
+            allImages.forEach((img, index) => {
+                const src = img.type === 'existing' ? `/uploads/${encodeURIComponent(img.data)}` : URL.createObjectURL(img.data);
+                const card = document.createElement('div');
+                card.className = "image-preview-card group w-32 h-32"; // Added w-32 h-32
+                card.innerHTML = `
+                    <img src="${src}" class="w-full h-full object-cover">
+                    <div class="image-controls group-hover:opacity-100 flex gap-1">
+                        <button type="button" onclick="openLightbox('${src}')" class="p-1.5 bg-white/20 hover:bg-white/40 text-white rounded-lg backdrop-blur-md transition-colors" title="Zoom">
+                            <span class="material-symbols-outlined !text-lg">zoom_in</span>
+                        </button>
+                        <button type="button" onclick="moveImage(${index}, -1)" class="p-1.5 bg-white/20 hover:bg-white/40 text-white rounded-lg backdrop-blur-md transition-colors" ${index === 0 ? 'disabled' : ''}>
+                            <span class="material-symbols-outlined !text-lg">arrow_back</span>
+                        </button>
+                        <button type="button" onclick="moveImage(${index}, 1)" class="p-1.5 bg-white/20 hover:bg-white/40 text-white rounded-lg backdrop-blur-md transition-colors" ${index === allImages.length - 1 ? 'disabled' : ''}>
+                            <span class="material-symbols-outlined !text-lg">arrow_forward</span>
+                        </button>
+                        <button type="button" onclick="removeImage(${index})" class="p-1.5 bg-white/20 hover:bg-accent-red text-white rounded-lg backdrop-blur-md transition-colors">
+                            <span class="material-symbols-outlined !text-lg">delete</span>
+                        </button>
+                    </div>
+                `;
+                preview.appendChild(card);
+            });
+        }
+
+        function moveImage(index, dir) {
+            const newIndex = index + dir;
+            if (newIndex < 0 || newIndex >= allImages.length) return;
+            const temp = allImages[index];
+            allImages[index] = allImages[newIndex];
+            allImages[newIndex] = temp;
+            renderImages();
+            markDirty();
+        }
+
+        function removeImage(index) {
+            allImages.splice(index, 1);
+            renderImages();
+            markDirty();
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">sync</span> Processing...';
+
+            const type = document.getElementById('type').value;
+            const formData = new FormData();
+            
+            formData.append('name', document.getElementById('name').value);
+            document.getElementById('slug').value ? formData.append('slug', document.getElementById('slug').value) : null;
+            formData.append('description', document.getElementById('description').value);
+            formData.append('price', document.getElementById('price').value);
+            formData.append('brand', document.getElementById('brand').value);
+            formData.append('inStock', document.getElementById('inStock').checked);
+            formData.append('isFeatured', document.getElementById('isFeatured').checked);
+            formData.append('keywords', document.getElementById('keywords').value);
+            formData.append('discountPercentage', document.getElementById('discountPercentage').value);
+
+            // Handle images
+            const existing = allImages.filter(img => img.type === 'existing').map(img => img.data);
+            const news = allImages.filter(img => img.type === 'new').map(img => img.data);
+            
+            formData.append('existingImages', JSON.stringify(existing));
+            news.forEach(file => {
+                formData.append('images', file);
+            });
+
+            if (type === 'beans' || type === 'syrups' || type === 'sauces') {
+                const variants = [];
+                document.querySelectorAll('#variantsContainer .dynamic-row').forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    if (inputs[0].value) {
+                        variants.push({ size: inputs[0].value, price: inputs[1].value });
+                    }
+                });
+                formData.append('variants', JSON.stringify(variants));
+
+                if (type === 'beans') {
+                    formData.append('roast_level', document.getElementById('roast_level').value);
+                    formData.append('grind_type', document.getElementById('grind_type').value);
+                    document.getElementById('cupping_notes').value.split(',').map(n => n.trim()).filter(n => n).forEach(note => {
+                        formData.append('cupping_notes', note);
+                    });
+                } else {
+                    formData.append('size', document.getElementById('size').value);
+                    formData.append('flavour_profile', document.getElementById('flavour_profile').value);
+                }
+            } else if (type === 'machines') {
+                formData.append('model', document.getElementById('model').value);
+                formData.append('specifications', JSON.stringify(collectDynamicProps('specsContainer')));
+                formData.append('features', JSON.stringify(collectDynamicProps('featuresContainer')));
+            }
+
+            const url = productId ? `/${productType}/${productId}` : `/${type}`;
+            const method = productId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, { method, body: formData });
+                if (response.ok) {
+                    isDirty = false;
+                    showToast(productId ? 'Product updated successfully' : 'Product added successfully', 'success');
+                    setTimeout(() => window.location.href = 'index.html', 1500);
+                } else {
+                    const err = await response.json();
+                    showToast('Error: ' + (err.message || 'Failed to save'), 'error');
+                }
+            } catch (error) {
+                showToast('Request failed. Please check your connection.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = productId ? 'Save Changes' : 'Add Product';
+            }
+        }
+
+        async function init() {
+            isInitializing = true;
+            handleTypeChange(true);
+            
+            // Attach dirty tracking to all inputs
+            document.querySelectorAll('input, select, textarea').forEach(el => {
+                el.addEventListener('input', markDirty);
+                el.addEventListener('change', markDirty);
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            // Mark images dirty when reordered or removed
+            // (Handled by the functions themselves now)
+
+            // Real-time image selection
+            document.getElementById('images').addEventListener('change', function(e) {
+                [...e.target.files].forEach(file => {
+                    allImages.push({ type: 'new', data: file });
+                });
+                renderImages();
+                markDirty();
+                e.target.value = ''; // Reset input to allow re-selecting same files
+            });
+
+            if (productId && productType) {
+                document.getElementById('pageTitle').textContent = "Edit Product";
+                document.getElementById('type').value = productType;
+                document.getElementById('type').disabled = true;
+                handleTypeChange(true);
+
+                const res = await fetch(`/${productType}/${productId}`);
+                const data = await res.json();
+                
+                document.getElementById('name').value = data.name || '';
+                document.getElementById('slug').value = data.slug || '';
+                document.getElementById('description').value = data.description || '';
+                document.getElementById('price').value = data.price || '';
+                document.getElementById('discountPercentage').value = data.discountPercentage || '0';
+                document.getElementById('brand').value = data.brand || '';
+                document.getElementById('inStock').checked = data.inStock !== false;
+                document.getElementById('isFeatured').checked = data.isFeatured === true;
+                
+                // Keywords handling (String or Array)
+                document.getElementById('keywords').value = Array.isArray(data.keywords) 
+                    ? data.keywords.join(', ') 
+                    : (data.keywords || '');
+
+                if (['beans', 'syrups', 'sauces'].includes(productType)) {
+                    const variantContainer = document.getElementById('variantsContainer');
+                    variantContainer.innerHTML = ''; // Clear before populating
+                    if (data.variants && data.variants.length > 0) {
+                        data.variants.forEach(v => addVariantRow(v.size, v.price));
+                    }
+                    
+                    if (productType === 'beans') {
+                        document.getElementById('roast_level').value = data.roast_level || '';
+                        document.getElementById('grind_type').value = data.grind_type || '';
+                        // Cupping notes handling (String or Array)
+                        document.getElementById('cupping_notes').value = Array.isArray(data.cupping_notes) 
+                            ? data.cupping_notes.join(', ') 
+                            : (data.cupping_notes || '');
+                    } else {
+                        document.getElementById('size').value = data.size || '';
+                        document.getElementById('flavour_profile').value = data.flavour_profile || '';
+                    }
+                } else if (productType === 'machines') {
+                    document.getElementById('model').value = data.model || '';
+                    const specsContainer = document.getElementById('specsContainer');
+                    const featuresContainer = document.getElementById('featuresContainer');
+                    specsContainer.innerHTML = '';
+                    featuresContainer.innerHTML = '';
+                    
+                    if (data.specifications) {
+                        Object.entries(data.specifications).forEach(([k,v]) => addDynamicRow('specsContainer', k, v));
+                    }
+                    if (data.features) {
+                        Object.entries(data.features).forEach(([k,v]) => addDynamicRow('featuresContainer', k, v));
+                    }
+                }
+
+                if (data.images && data.images.length > 0) {
+                    allImages = data.images.map(img => ({ type: 'existing', data: img }));
+                    renderImages();
+                    isDirty = false; // Reset dirty state after initial load
+                }
+                isDirty = false; // Ensure it's false after programmatic population
+            }
+            isInitializing = false;
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

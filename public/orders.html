@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Coffee Lab Admin - Orders</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#483628",
+                        "background-light": "#fafafa",
+                        "background-dark": "#1c1e22",
+                        "accent-green": "#7CA17C",
+                        "accent-red": "#CC7070",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .sidebar-active { background-color: rgba(72, 54, 40, 0.1); color: #483628; border-right: 3px solid #483628; }
+        .toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.75rem; pointer-events: none; }
+        .toast { pointer-events: auto; }
+        
+        .sidebar { transition: transform 0.3s ease; }
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); z-index: 1001; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0 !important; }
+        }
+        .sidebar-overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4); 
+            backdrop-filter: blur(4px); z-index: 1000; 
+            display: none; opacity: 0; transition: opacity 0.3s ease; 
+        }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-gray-100 antialiased min-h-screen flex">
+    
+    <!-- Mobile Header -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 bg-white dark:bg-background-dark border-b border-gray-100 dark:border-gray-800 z-50 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <img src="logo.png" alt="Logo" class="w-8 h-8 object-contain">
+            <h1 class="text-sm font-bold tracking-tight text-primary uppercase">Coffee Lab</h1>
+        </div>
+        <button onclick="toggleSidebar()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <aside id="sidebar" class="sidebar w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-background-dark flex flex-col fixed h-full z-[1001]">
+        <div class="p-6">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center">
+                    <img src="logo.png" alt="Coffee Lab Logo" class="w-full h-auto">
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold tracking-tight text-primary uppercase">Coffee Lab</h1>
+                    <p class="text-[10px] text-gray-500 font-medium">ADMIN PANEL</p>
+                </div>
+            </div>
+        </div>
+        <nav class="flex-1 mt-4 px-3 space-y-1 text-gray-600 dark:text-gray-400">
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="index.html">
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">inventory_2</span>
+                Products
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="blogs.html">
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">article</span>
+                Blog
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium sidebar-active rounded-lg transition-all group" href="orders.html">
+                <span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+                Orders
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-100 dark:border-gray-800">
+            <button class="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">logout</span>
+                    Logout
+                </div>
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content flex-1 ml-64 min-h-screen flex flex-col pt-16 lg:pt-0">
+        <header class="bg-white/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-20 border-b border-gray-100 dark:border-gray-800 px-4 lg:px-8 py-4 lg:py-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl lg:text-3xl font-black text-primary tracking-tight">Order Management</h2>
+                    <p class="text-xs lg:text-sm text-gray-500 mt-0.5 lg:mt-1">Manage customer purchases and deliveries</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="add-order.html" class="bg-primary hover:bg-primary/90 text-white px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold transition-transform active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">add</span>
+                        New Order
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div class="px-4 lg:px-8 py-4 lg:py-8 space-y-6">
+            <div class="flex flex-col md:flex-row items-center gap-4 bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                <div class="relative flex-1 w-full">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 text-sm">search</span>
+                    <input id="searchInput" type="text" placeholder="Search by customer, phone or order ID..." class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 transition-all">
+                </div>
+                <div class="flex items-center gap-2 w-full md:w-auto">
+                    <select id="statusFilter" class="flex-1 md:w-40 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm px-4 py-2 focus:ring-2 focus:ring-primary/20 transition-all">
+                        <option value="all">All Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[1000px]">
+                        <thead>
+                            <tr class="text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-50 dark:border-gray-800">
+                                <th class="px-6 py-4">Order ID</th>
+                                <th class="px-6 py-4">Customer</th>
+                                <th class="px-6 py-4">Phone</th>
+                                <th class="px-6 py-4">Date</th>
+                                <th class="px-6 py-4">Items</th>
+                                <th class="px-6 py-4">Total</th>
+                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody" class="divide-y divide-gray-50 dark:divide-gray-800 text-sm">
+                            <!-- Orders will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `flex items-center w-full max-w-xs p-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 toast transition-all duration-500 opacity-0 translate-x-10`;
+            toast.setAttribute('role', 'alert');
+            
+            const iconColor = type === 'success' ? 'text-primary' : 'text-accent-red';
+            
+            toast.innerHTML = `
+                <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 dark:bg-gray-700">
+                    <span class="material-symbols-outlined ${iconColor} !text-xl">${type === 'success' ? 'check_circle' : 'error'}</span>
+                </div>
+                <div class="ms-3 text-sm font-medium text-gray-600 dark:text-gray-300">${message}</div>
+                <button type="button" onclick="this.parentElement.remove()" class="ms-auto flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-lg h-8 w-8 focus:outline-none" aria-label="Close">
+                    <span class="sr-only">Close</span>
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/>
+                    </svg>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => { toast.classList.remove('opacity-0', 'translate-x-10'); }, 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-10');
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        let allOrders = [];
+
+        async function fetchOrders() {
+            try {
+                const response = await fetch('/orders');
+                allOrders = await response.json();
+                renderOrders(allOrders);
+            } catch (error) {
+                showToast('Failed to fetch orders', 'error');
+            }
+        }
+
+        function renderOrders(orders) {
+            const tbody = document.getElementById('ordersTableBody');
+            tbody.innerHTML = orders.map(order => `
+                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
+                    <td class="px-6 py-4 font-mono text-[10px] text-gray-400">#${order.id}</td>
+                    <td class="px-6 py-4 font-bold text-gray-900 dark:text-gray-100">${order.customerName || 'N/A'}</td>
+                    <td class="px-6 py-4 text-gray-500">${order.phone || 'N/A'}</td>
+                    <td class="px-6 py-4 text-gray-500">${new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td class="px-6 py-4 text-gray-500">${(order.items || []).length} items</td>
+                    <td class="px-6 py-4 font-bold text-primary">৳${order.totalAmount || 0}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusClass(order.status)}">
+                            ${order.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right space-x-2">
+                        <a href="add-order.html?id=${order.id}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-primary transition-all">
+                            <span class="material-symbols-outlined text-sm">edit</span>
+                        </a>
+                        <button onclick="deleteOrder('${order.id}')" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/10 text-red-400 hover:text-red-600 transition-all">
+                            <span class="material-symbols-outlined text-sm">delete</span>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'Pending': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+                case 'Confirmed': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+                case 'Shipped': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
+                case 'Delivered': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+                case 'Cancelled': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+                default: return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400';
+            }
+        }
+
+        async function deleteOrder(id) {
+            if (!confirm('Are you sure you want to delete this order?')) return;
+            try {
+                const res = await fetch(`/orders/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast('Order deleted successfully');
+                    fetchOrders();
+                }
+            } catch (error) {
+                showToast('Failed to delete order', 'error');
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allOrders.filter(o => 
+                o.customerName?.toLowerCase().includes(term) || 
+                o.phone?.includes(term) || 
+                o.id.toLowerCase().includes(term)
+            );
+            renderOrders(filtered);
+        });
+
+        document.getElementById('statusFilter').addEventListener('change', (e) => {
+            const status = e.target.value;
+            if (status === 'all') {
+                renderOrders(allOrders);
+            } else {
+                const filtered = allOrders.filter(o => o.status === status);
+                renderOrders(filtered);
+            }
+        });
+
+        // Prevent Enter key from submitting
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                e.preventDefault();
+            }
+        });
+
+        window.onload = fetchOrders;
+    </script>
+</body>
+</html>

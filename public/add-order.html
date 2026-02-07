@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Coffee Lab Admin - Add Order</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#483628",
+                        "background-light": "#fafafa",
+                        "background-dark": "#1c1e22",
+                        "accent-green": "#7CA17C",
+                        "accent-red": "#CC7070",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .sidebar-active { background-color: rgba(72, 54, 40, 0.1); color: #483628; border-right: 3px solid #483628; }
+        .toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.75rem; pointer-events: none; }
+        .toast { pointer-events: auto; }
+        
+        .sidebar { transition: transform 0.3s ease; }
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); z-index: 1001; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0 !important; }
+        }
+        .sidebar-overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4); 
+            backdrop-filter: blur(4px); z-index: 1000; 
+            display: none; opacity: 0; transition: opacity 0.3s ease; 
+        }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+        .dynamic-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; align-items: start; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-gray-100 antialiased min-h-screen flex">
+    
+    <!-- Mobile Header -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 bg-white dark:bg-background-dark border-b border-gray-100 dark:border-gray-800 z-50 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <img src="logo.png" alt="Logo" class="w-8 h-8 object-contain">
+            <h1 class="text-sm font-bold tracking-tight text-primary uppercase">Coffee Lab</h1>
+        </div>
+        <button onclick="toggleSidebar()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <aside id="sidebar" class="sidebar w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-background-dark flex flex-col fixed h-full z-[1001]">
+        <div class="p-6">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center">
+                    <img src="logo.png" alt="Coffee Lab Logo" class="w-full h-auto">
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold tracking-tight text-primary uppercase">Coffee Lab</h1>
+                    <p class="text-[10px] text-gray-500 font-medium">ADMIN PANEL</p>
+                </div>
+            </div>
+        </div>
+        <nav class="flex-1 mt-4 px-3 space-y-1 text-gray-600 dark:text-gray-400">
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="index.html">
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">inventory_2</span>
+                Products
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="blogs.html">
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">article</span>
+                Blog
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium sidebar-active rounded-lg transition-all group" href="orders.html">
+                <span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+                Orders
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-100 dark:border-gray-800">
+            <button class="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">logout</span>
+                    Logout
+                </div>
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content flex-1 ml-64 min-h-screen flex flex-col pt-16 lg:pt-0">
+        <form id="orderForm" onsubmit="handleSubmit(event)">
+            <header class="bg-white/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-20 border-b border-gray-100 dark:border-gray-800 px-4 lg:px-8 py-4 lg:py-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 id="pageTitle" class="text-2xl lg:text-3xl font-black text-primary tracking-tight">Create Order</h2>
+                        <p class="text-xs lg:text-sm text-gray-500 mt-0.5 lg:mt-1">Add details for a new customer purchase</p>
+                    </div>
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <a href="orders.html" class="px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 transition-colors">Cancel</a>
+                        <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold transition-transform active:scale-95 shadow-lg shadow-primary/20 flex-1 sm:flex-none">
+                            Save Order
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="px-4 lg:px-8 py-4 lg:py-8 space-y-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Left Column: Customer & Shipping -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">1. Customer Information</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Customer Name</label>
+                                    <input id="customerName" required class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Enter name" type="text"/>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Phone Number</label>
+                                    <input id="phone" required class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Enter phone" type="tel"/>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Email (Optional)</label>
+                                    <input id="email" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Enter email" type="email"/>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Address</label>
+                                    <textarea id="address" required class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Enter full delivery address" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">2. Order Items</h3>
+                            <div id="itemsContainer" class="space-y-4">
+                                <!-- Order items will be added here -->
+                            </div>
+                            <button type="button" onclick="addItemRow()" class="text-xs font-bold text-primary mt-4 flex items-center gap-1 hover:underline">
+                                <span class="material-symbols-outlined text-sm">add_circle</span>
+                                Add Another Product
+                            </button>
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">3. Delivery & Extra Info</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Delivery Fee (BDT)</label>
+                                    <input id="deliveryFee" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value="60" type="number" oninput="calculateTotal()"/>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Payment Method</label>
+                                    <select id="paymentMethod" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+                                        <option value="Cash on Delivery">Cash on Delivery</option>
+                                        <option value="bKash">bKash</option>
+                                        <option value="Nagad">Nagad</option>
+                                        <option value="Bank Transfer">Bank Transfer</option>
+                                    </select>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Delivery Note</label>
+                                    <textarea id="deliveryNote" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Any special instructions for delivery..." rows="2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Summary & Status -->
+                    <div class="space-y-6">
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">4. Order Status</h3>
+                            <select id="status" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-bold">
+                                <option value="Pending">Pending</option>
+                                <option value="Confirmed">Confirmed</option>
+                                <option value="Shipped">Shipped</option>
+                                <option value="Delivered">Delivered</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm sticky top-24">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">5. Summary</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between text-sm text-gray-500">
+                                    <span>Subtotal</span>
+                                    <span id="summarySubtotal">৳0</span>
+                                </div>
+                                <div class="flex justify-between text-sm text-gray-500">
+                                    <span>Delivery Fee</span>
+                                    <span id="summaryDelivery">৳60</span>
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-500">Extra Discount</span>
+                                        <div class="flex bg-gray-100 dark:bg-gray-800 p-0.5 rounded-lg">
+                                            <button type="button" onclick="setDiscountType('flat')" id="btnFlat" class="px-2 py-1 text-[10px] font-bold rounded-md transition-all bg-white dark:bg-gray-700 shadow-sm text-primary">FLAT</button>
+                                            <button type="button" onclick="setDiscountType('percent')" id="btnPercent" class="px-2 py-1 text-[10px] font-bold rounded-md transition-all text-gray-400">%</button>
+                                        </div>
+                                    </div>
+                                    <input id="extraDiscount" class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-lg px-3 py-2 text-sm text-right focus:ring-1 focus:ring-primary/20" type="number" value="0" oninput="calculateTotal()"/>
+                                    <input type="hidden" id="discountType" value="flat">
+                                </div>
+                                <div class="pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                                    <span class="text-base font-black text-gray-900 dark:text-gray-100 uppercase tracking-tight">Total</span>
+                                    <div class="text-right">
+                                        <span id="summaryTotal" class="text-2xl font-black text-primary">৳0</span>
+                                        <p class="text-[10px] text-gray-400 font-medium">VAT INCLUDED (IF APPLICABLE)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const orderId = params.get('id');
+        let allProducts = [];
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `flex items-center w-full max-w-xs p-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 toast transition-all duration-500 opacity-0 translate-x-10`;
+            toast.setAttribute('role', 'alert');
+            const iconColor = type === 'success' ? 'text-primary' : 'text-accent-red';
+            toast.innerHTML = `
+                <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 dark:bg-gray-700">
+                    <span class="material-symbols-outlined ${iconColor} !text-xl">${type === 'success' ? 'check_circle' : 'error'}</span>
+                </div>
+                <div class="ms-3 text-sm font-medium text-gray-600 dark:text-gray-300">${message}</div>
+                <button type="button" onclick="this.parentElement.remove()" class="ms-auto flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-lg h-8 w-8 focus:outline-none" aria-label="Close">
+                    <span class="sr-only">Close</span>
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/>
+                    </svg>
+                </button>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => { toast.classList.remove('opacity-0', 'translate-x-10'); }, 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-10');
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        async function fetchProducts() {
+            const entities = ['beans', 'machines', 'syrups', 'sauces'];
+            const all = await Promise.all(entities.map(e => fetch(`/${e}`).then(r => r.json())));
+            allProducts = all.flat();
+            if (!orderId) addItemRow(); // Add initial row only if creating new
+        }
+
+        function addItemRow(selectedId = '', selectedVariant = '', quantity = 1, storedName = '', storedPrice = 0) {
+            const container = document.getElementById('itemsContainer');
+            const rowId = 'row-' + Math.random().toString(36).substr(2, 9);
+            const div = document.createElement('div');
+            div.className = "dynamic-row bg-gray-50/50 dark:bg-gray-800/20 p-4 rounded-xl border border-gray-100 dark:border-gray-700/50";
+            div.id = rowId;
+
+            // Check if product still exists
+            const exists = allProducts.some(p => p.id === selectedId);
+            const productOptions = allProducts.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>${p.name}</option>`).join('');
+            
+            // If it's an existing item but product is deleted, add a special option
+            const deletedOption = (selectedId && !exists) ? `<option value="${selectedId}" selected>${storedName || 'Deleted Product'} (৳${storedPrice})</option>` : '';
+            
+            div.innerHTML = `
+                <div class="flex-1 space-y-3">
+                    <select class="product-select w-full bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg text-sm px-3 py-2 cursor-pointer focus:ring-1 focus:ring-primary/20" onchange="handleProductChange('${rowId}')">
+                        <option value="">Select Product...</option>
+                        ${deletedOption}
+                        ${productOptions}
+                    </select>
+                    <div class="flex gap-3">
+                        <select class="variant-select flex-1 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg text-xs px-3 py-2 cursor-pointer focus:ring-1 focus:ring-primary/20 hidden"></select>
+                        <input type="number" value="${quantity}" min="1" class="qty-input w-20 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg text-xs px-3 py-2 text-center" oninput="calculateTotal()">
+                    </div>
+                </div>
+                <div class="text-right flex flex-col items-end gap-2 pt-2">
+                    <span class="row-total font-bold text-primary">৳0</span>
+                    <button type="button" onclick="this.closest('.dynamic-row').remove(); calculateTotal()" class="text-gray-300 hover:text-accent-red bg-white dark:bg-gray-800 p-1.5 rounded-lg border border-gray-100 dark:border-gray-700 transition-colors">
+                        <span class="material-symbols-outlined !text-lg">delete</span>
+                    </button>
+                </div>
+            `;
+            container.appendChild(div);
+            
+            if (selectedId) {
+                handleProductChange(rowId, selectedVariant, storedPrice);
+            }
+        }
+
+        function handleProductChange(rowId, selectedVariant = '', storedPrice = 0) {
+            const row = document.getElementById(rowId);
+            const productId = row.querySelector('.product-select').value;
+            const variantSelect = row.querySelector('.variant-select');
+            
+            if (!productId) {
+                variantSelect.classList.add('hidden');
+                calculateTotal();
+                return;
+            }
+
+            const product = allProducts.find(p => p.id === productId);
+            
+            if (!product) {
+                // Product deleted, use stored price
+                variantSelect.classList.add('hidden');
+                variantSelect.innerHTML = `<option value="${selectedVariant}" data-price="${storedPrice}" selected>${selectedVariant || 'Default'} - ৳${storedPrice}</option>`;
+                calculateTotal();
+                return;
+            }
+
+            if (product.variants && product.variants.length > 0) {
+                variantSelect.classList.remove('hidden');
+                variantSelect.innerHTML = product.variants.map(v => 
+                    `<option value="${v.size}" data-price="${v.price}" ${v.size === selectedVariant ? 'selected' : ''}>${v.size} - ৳${v.price}</option>`
+                ).join('');
+            } else {
+                variantSelect.classList.add('hidden');
+                variantSelect.innerHTML = `<option value="default" data-price="${product.price}">Default - ৳${product.price}</option>`;
+            }
+            
+            calculateTotal();
+        }
+
+        function setDiscountType(type) {
+            document.getElementById('discountType').value = type;
+            const btnFlat = document.getElementById('btnFlat');
+            const btnPercent = document.getElementById('btnPercent');
+            
+            if (type === 'flat') {
+                btnFlat.className = 'px-2 py-1 text-[10px] font-bold rounded-md transition-all bg-white dark:bg-gray-700 shadow-sm text-primary';
+                btnPercent.className = 'px-2 py-1 text-[10px] font-bold rounded-md transition-all text-gray-400';
+            } else {
+                btnPercent.className = 'px-2 py-1 text-[10px] font-bold rounded-md transition-all bg-white dark:bg-gray-700 shadow-sm text-primary';
+                btnFlat.className = 'px-2 py-1 text-[10px] font-bold rounded-md transition-all text-gray-400';
+            }
+            calculateTotal();
+        }
+
+        function calculateTotal() {
+            let subtotal = 0;
+            const rows = document.querySelectorAll('.dynamic-row');
+            
+            rows.forEach(row => {
+                const variantSelect = row.querySelector('.variant-select');
+                const qty = parseInt(row.querySelector('.qty-input').value) || 0;
+                let price = 0;
+                
+                if (variantSelect.options.length > 0) {
+                    const selected = variantSelect.options[variantSelect.selectedIndex];
+                    price = parseFloat(selected?.dataset?.price) || 0;
+                }
+                
+                const rowTotal = price * qty;
+                subtotal += rowTotal;
+                row.querySelector('.row-total').textContent = `৳${rowTotal}`;
+            });
+
+            const delivery = parseFloat(document.getElementById('deliveryFee').value) || 0;
+            const extraDiscount = parseFloat(document.getElementById('extraDiscount').value) || 0;
+            const discountType = document.getElementById('discountType').value;
+            
+            let finalDiscount = extraDiscount;
+            if (discountType === 'percent') {
+                finalDiscount = (subtotal * extraDiscount) / 100;
+            }
+
+            const total = subtotal + delivery - finalDiscount;
+
+            document.getElementById('summarySubtotal').textContent = `৳${subtotal}`;
+            document.getElementById('summaryDelivery').textContent = `৳${delivery}`;
+            document.getElementById('summaryTotal').textContent = `৳${Math.max(0, Math.round(total))}`;
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">sync</span> Processing...';
+
+            const items = [];
+            document.querySelectorAll('.dynamic-row').forEach(row => {
+                const productId = row.querySelector('.product-select').value;
+                if (!productId) return;
+                
+                const product = allProducts.find(p => p.id === productId);
+                const variantSelect = row.querySelector('.variant-select');
+                const qty = parseInt(row.querySelector('.qty-input').value) || 0;
+                const variant = variantSelect.value;
+                const price = parseFloat(variantSelect.options[variantSelect.selectedIndex]?.dataset.price) || 0;
+
+                items.push({
+                    productId,
+                    productName: product.name,
+                    variant,
+                    quantity: qty,
+                    price,
+                    total: price * qty
+                });
+            });
+
+            const subtotal = items.reduce((sum, item) => sum + item.total, 0);
+            const deliveryFee = parseFloat(document.getElementById('deliveryFee').value) || 0;
+            const extraDiscount = parseFloat(document.getElementById('extraDiscount').value) || 0;
+            const discountType = document.getElementById('discountType').value;
+            
+            let finalDiscount = extraDiscount;
+            if (discountType === 'percent') {
+                finalDiscount = (subtotal * extraDiscount) / 100;
+            }
+
+            const totalAmount = Math.round(subtotal + deliveryFee - finalDiscount);
+
+            const payload = {
+                customerName: document.getElementById('customerName').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                address: document.getElementById('address').value,
+                items,
+                deliveryFee,
+                extraDiscount,
+                discountType,
+                totalAmount,
+                paymentMethod: document.getElementById('paymentMethod').value,
+                deliveryNote: document.getElementById('deliveryNote').value,
+                status: document.getElementById('status').value
+            };
+
+            const url = orderId ? `/orders/${orderId}` : '/orders';
+            const method = orderId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    showToast(orderId ? 'Order updated successfully' : 'Order created successfully');
+                    setTimeout(() => window.location.href = 'orders.html', 1500);
+                } else {
+                    const err = await response.json();
+                    showToast(err.message || 'Failed to save order', 'error');
+                }
+            } catch (error) {
+                showToast('Request failed', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = orderId ? 'Save Changes' : 'Save Order';
+            }
+        }
+
+        async function init() {
+            await fetchProducts();
+            
+            if (orderId) {
+                document.getElementById('pageTitle').textContent = "Edit Order";
+                try {
+                    const res = await fetch(`/orders/${orderId}`);
+                    const order = await res.json();
+                    
+                    document.getElementById('customerName').value = order.customerName || '';
+                    document.getElementById('phone').value = order.phone || '';
+                    document.getElementById('email').value = order.email || '';
+                    document.getElementById('address').value = order.address || '';
+                    document.getElementById('deliveryFee').value = order.deliveryFee || 0;
+                    document.getElementById('paymentMethod').value = order.paymentMethod || 'Cash on Delivery';
+                    document.getElementById('deliveryNote').value = order.deliveryNote || '';
+                    document.getElementById('status').value = order.status || 'Pending';
+                    document.getElementById('extraDiscount').value = order.extraDiscount || 0;
+                    if (order.discountType) {
+                        setDiscountType(order.discountType);
+                    }
+
+                    if (order.items && order.items.length > 0) {
+                        document.getElementById('itemsContainer').innerHTML = '';
+                        order.items.forEach(item => {
+                            addItemRow(item.productId, item.variant, item.quantity, item.productName, item.price);
+                        });
+                    }
+                    calculateTotal();
+                } catch (e) {
+                    showToast('Failed to load order details', 'error');
+                }
+            }
+
+            // Prevent Enter key from submitting
+            document.querySelectorAll('input, select, textarea').forEach(el => {
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+                        e.preventDefault();
+                    }
+                });
+            });
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

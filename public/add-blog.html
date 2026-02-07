@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Coffee Lab Admin - Create Blog Post</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <!-- Quill 2.0 -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#483628",
+                        "background-light": "#fafafa",
+                        "background-dark": "#1c1e22",
+                        "accent-green": "#7CA17C",
+                        "accent-red": "#CC7070",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-active {
+            background-color: rgba(72, 54, 40, 0.1);
+            color: #483628;
+            border-right: 3px solid #483628;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e5e7eb;
+            border-radius: 10px;
+        }
+        .rich-text-toolbar button {
+            padding: 0.375rem;
+            color: #4b5563;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+        }
+        .rich-text-toolbar button:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.75rem; pointer-events: none; }
+        .toast { 
+            pointer-events: auto;
+        }
+
+        /* Lightbox */
+        #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 2rem; cursor: zoom-out; }
+        #lightbox.active { display: flex; }
+        #lightbox img { max-width: 90%; max-height: 90%; border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        #lightbox.active img { transform: scale(1); }
+        
+        .toast-progress {
+            position: absolute; bottom: 0; left: 0; height: 3px; width: 100%;
+            background: rgba(0,0,0,0.05);
+        }
+        .toast-progress-bar {
+            height: 100%; width: 100%; transform-origin: left;
+            transition: transform linear;
+        }
+        .toast-success .toast-progress-bar { background: #7CA17C; }
+        .toast-error .toast-progress-bar { background: #CC7070; }
+
+        /* Quill UI Overrides */
+        .ql-toolbar.ql-snow { border-color: #f3f4f6; background: #f9fafb; border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; padding: 0.75rem; }
+        .ql-container.ql-snow { border-color: #f3f4f6; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem; font-family: 'Manrope', sans-serif; }
+        .ql-editor { min-height: 500px; font-size: 1rem; line-height: 1.6; }
+        .ql-editor.ql-blank::before { color: #9ca3af; font-style: normal; }
+
+        /* Fix tooltip visibility */
+        .ql-snow .ql-tooltip { z-index: 1000 !important; }
+        #editor-wrapper { overflow: visible !important; }
+
+        /* Sidebar Responsive Styles */
+        .sidebar { transition: transform 0.3s ease; }
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); z-index: 1001; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0 !important; }
+        }
+        .sidebar-overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4); 
+            backdrop-filter: blur(4px); z-index: 1000; 
+            display: none; opacity: 0; transition: opacity 0.3s ease; 
+        }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+    </style>
+</head>
+    <!-- Mobile Header -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 bg-white dark:bg-background-dark border-b border-gray-100 dark:border-gray-800 z-50 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <img src="logo.png" alt="Logo" class="w-8 h-8 object-contain">
+            <h1 class="text-sm font-bold tracking-tight text-primary uppercase">Coffee Lab</h1>
+        </div>
+        <button onclick="toggleSidebar()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <aside id="sidebar" class="sidebar w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-background-dark flex flex-col fixed h-full z-[1001]">
+        <div class="p-6">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center">
+                    <img src="logo.png" alt="Coffee Lab Logo" class="w-full h-auto">
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold tracking-tight text-primary uppercase">Coffee Lab</h1>
+                    <p class="text-[10px] text-gray-500 font-medium">ADMIN PANEL</p>
+                </div>
+            </div>
+        </div>
+        <nav class="flex-1 mt-4 px-3 space-y-1">
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="index.html">
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">inventory_2</span>
+                Products
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium sidebar-active rounded-lg transition-all group" href="blogs.html">
+                <span class="material-symbols-outlined text-[20px]">article</span>
+                Blog
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="orders.html">
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">shopping_cart</span>
+                Orders
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-100 dark:border-gray-800">
+            <button class="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group">
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">logout</span>
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content flex-1 ml-64 min-h-screen flex flex-col pt-16 lg:pt-0">
+        <form id="blogForm" onsubmit="handleSubmit(event)">
+            <header class="bg-white/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 lg:top-0 z-20 border-b border-gray-100 dark:border-gray-800 px-4 lg:px-8 py-4 lg:py-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 id="pageTitle" class="text-2xl lg:text-3xl font-black text-primary tracking-tight">Create Blog Post</h2>
+                        <p class="text-xs lg:text-sm text-gray-500 mt-0.5 lg:mt-1">Write and publish new content to the Coffee Lab blog</p>
+                    </div>
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <a href="blogs.html" class="px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 transition-colors">Cancel</a>
+                        <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold transition-transform active:scale-95 shadow-lg shadow-primary/20 flex-1 sm:flex-none">
+                            Save Post
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="px-4 lg:px-8 py-4 lg:py-8 space-y-8 w-full">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">1. Core Content</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Article Title</label>
+                                    <input id="title" required class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-lg font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Enter post title..." type="text" oninput="generateSlug()"/>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">URL Slug</label>
+                                    <div class="relative">
+                                        <input id="slug" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="how-to-brew-perfect-espresso" type="text"/>
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 text-sm">edit</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Excerpt (Short description)</label>
+                                    <textarea id="excerpt" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Brief summary of the article for listings..." rows="2"></textarea>
+                                </div>
+                                <div class="pt-4 border-t border-gray-100 dark:border-gray-800 mt-4">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-3 ml-1">Article Body</label>
+                                    <div id="editor-wrapper" class="bg-white dark:bg-gray-900 rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
+                                        <div id="editor"></div>
+                                        <input type="hidden" id="content">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">2. Article Settings</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Category</label>
+                                    <input id="category" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Enter category..." type="text" value="Coffee Culture"/>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Author</label>
+                                    <input id="author" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Author name" type="text" value="Coffee Lab BD Team"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">3. Media & Visibility</h3>
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Featured Image</label>
+                                    <div class="space-y-3">
+                                        <input type="file" id="images" name="image" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
+                                        <div id="imagePreview" class="w-full aspect-video bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 cursor-zoom-in group relative overflow-hidden" onclick="openBlogLightbox()">
+                                            <span class="material-symbols-outlined text-3xl mb-1 group-hover:scale-110 transition-transform">image</span>
+                                            <p class="text-[10px] font-bold uppercase tracking-wider">Preview window</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between py-2 border-t border-gray-50 dark:border-gray-800 pt-4">
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-700 dark:text-gray-200">Is Featured</p>
+                                        <p class="text-[11px] text-gray-500">Highlight on homepage</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input id="isFeatured" class="sr-only peer" type="checkbox"/>
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Publish Date</label>
+                                    <div class="relative">
+                                        <input id="date" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" type="date"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <!-- Lightbox -->
+    <div id="lightbox" onclick="this.classList.remove('active')">
+        <button class="absolute top-6 right-8 text-white/50 hover:text-white transition-all">
+            <span class="material-symbols-outlined text-4xl">close</span>
+        </button>
+        <img src="" alt="Enlarged view" onclick="event.stopPropagation()">
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const blogId = params.get('id');
+        let isDirty = false;
+        let quill;
+        let isInitializing = false;
+
+        function openLightbox(src) {
+            const lb = document.getElementById('lightbox');
+            lb.querySelector('img').src = src;
+            lb.classList.add('active');
+        }
+
+        function openBlogLightbox() {
+            const img = document.querySelector('#imagePreview img');
+            if (img) openLightbox(img.src);
+        }
+
+        // Close on ESC
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') document.getElementById('lightbox').classList.remove('active');
+        });
+
+        function initQuill() {
+            quill = new Quill('#editor', {
+                theme: 'snow',
+                placeholder: 'Write your masterpiece here...',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        ['blockquote', 'code-block'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'script': 'sub'}, { 'script': 'super' }],
+                        [{ 'indent': '-1'}, { 'indent': '+1' }],
+                        ['link', 'image', 'video'],
+                        ['clean']
+                    ]
+                }
+            });
+
+            quill.on('text-change', () => {
+                markDirty();
+            });
+        }
+
+        // Dirty state tracking
+        window.addEventListener('beforeunload', (e) => {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        function markDirty() {
+            if (!isDirty && !isInitializing) {
+                isDirty = true;
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `flex items-center w-full max-w-xs p-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 toast transition-all duration-500 opacity-0 translate-x-10`;
+            toast.setAttribute('role', 'alert');
+            
+            const iconColor = type === 'success' ? 'text-primary' : 'text-accent-red';
+            
+            toast.innerHTML = `
+                <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 dark:bg-gray-700">
+                    <span class="material-symbols-outlined ${iconColor} !text-xl">${type === 'success' ? 'check_circle' : 'error'}</span>
+                </div>
+                <div class="ms-3 text-sm font-medium text-gray-600 dark:text-gray-300">${message}</div>
+                <button type="button" onclick="this.parentElement.remove()" class="ms-auto flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-lg h-8 w-8 focus:outline-none" aria-label="Close">
+                    <span class="sr-only">Close</span>
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/>
+                    </svg>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-x-10');
+            }, 10);
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-10');
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        function generateSlug() {
+            if (blogId) return;
+            const title = document.getElementById('title').value;
+            const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            document.getElementById('slug').value = slug || 'new-post';
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">sync</span> Processing...';
+
+            const formData = new FormData();
+            
+            // Extract HTML from Quill
+            const editorHtml = quill.root.innerHTML;
+            formData.append('title', document.getElementById('title').value);
+            formData.append('slug', document.getElementById('slug').value);
+            formData.append('content', editorHtml);
+            formData.append('excerpt', document.getElementById('excerpt').value);
+            formData.append('category', document.getElementById('category').value);
+            formData.append('author', document.getElementById('author').value);
+            formData.append('isFeatured', document.getElementById('isFeatured').checked);
+            
+            const dateVal = document.getElementById('date').value;
+            if (dateVal) {
+                const formattedDate = new Date(dateVal).toLocaleDateString('en-GB');
+                formData.append('date', formattedDate);
+            }
+
+            const imageInput = document.getElementById('images');
+            if (imageInput.files.length > 0) {
+                formData.append('image', imageInput.files[0]);
+            }
+
+            const url = blogId ? `/blogs/${blogId}` : `/blogs`;
+            const method = blogId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, { method, body: formData });
+                if (response.ok) {
+                    isDirty = false;
+                    showToast(blogId ? 'Blog post updated successfully' : 'Blog post published successfully', 'success');
+                    setTimeout(() => window.location.href = 'blogs.html', 1500);
+                } else {
+                    const err = await response.json();
+                    showToast('Error: ' + (err.message || 'Failed to save'), 'error');
+                }
+            } catch (error) {
+                showToast('Request failed. Please check your connection.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = blogId ? 'Save Changes' : 'Save Post';
+            }
+        }
+
+        // Image Preview Logic
+        document.getElementById('images').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('imagePreview');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    preview.innerHTML = `<img src="${event.target.result}" class="w-full h-full object-cover rounded-lg">`;
+                    markDirty();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        async function init() {
+            isInitializing = true;
+            // Attach dirty tracking
+            document.querySelectorAll('input, select, textarea').forEach(el => {
+                el.addEventListener('input', markDirty);
+                el.addEventListener('change', markDirty);
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && !e.target.classList.contains('ql-editor')) {
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            initQuill();
+
+            if (blogId) {
+                document.getElementById('pageTitle').textContent = "Edit Blog Post";
+                const res = await fetch(`/blogs/${blogId}`);
+                const data = await res.json();
+                
+                document.getElementById('title').value = data.title || '';
+                document.getElementById('slug').value = data.slug || '';
+                if (data.content) {
+                    quill.root.innerHTML = data.content;
+                }
+                document.getElementById('excerpt').value = data.excerpt || '';
+                document.getElementById('category').value = data.category || data.keyword || 'Coffee Culture';
+                document.getElementById('author').value = data.author || '';
+                document.getElementById('isFeatured').checked = data.isFeatured === true;
+                
+                if (data.date) {
+                    // Try to parse 'DD/MM/YYYY' back to 'YYYY-MM-DD' for input[type=date]
+                    const parts = data.date.split('/');
+                    if (parts.length === 3) {
+                        document.getElementById('date').value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                    }
+                }
+
+                const displayImage = (data.images && data.images.length > 0) ? data.images[0] : data.image;
+                if (displayImage) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.innerHTML = `<img src="/uploads/${displayImage}" class="w-full h-full object-cover rounded-lg">`;
+                }
+                isDirty = false; // Reset after load
+            } else {
+                // Default date to today
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('date').value = today;
+            }
+            isInitializing = false;
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
