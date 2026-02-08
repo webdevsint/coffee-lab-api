@@ -59,6 +59,18 @@ Clears the authentication cookie.
 
 #### cURL
 
+**Option 1: Using Header (Recommended for Scripts)**
+
+```bash
+# Create a product
+curl -X POST http://localhost:3000/api/beans \
+  -H "x-api-key: test" \
+  -F "name=Ethiopia Yirgacheffe" \
+  -F "price=1200"
+```
+
+**Option 2: Using Cookies (Like Browser)**
+
 ```bash
 # Step 1: Login and save the cookie
 curl -X POST http://localhost:3000/api/login \
@@ -67,9 +79,6 @@ curl -X POST http://localhost:3000/api/login \
   -c cookies.txt
 
 # Step 2: Use the cookie for authenticated requests
-curl http://localhost:3000/api/beans -b cookies.txt
-
-# Create a product with authentication
 curl -X POST http://localhost:3000/api/beans \
   -b cookies.txt \
   -F "name=Ethiopia Yirgacheffe" \
@@ -78,9 +87,15 @@ curl -X POST http://localhost:3000/api/beans \
 
 #### Postman
 
-1. Send a `POST` request to `/api/login` with username/password in the body
-2. Postman automatically saves cookies - subsequent requests will include them
-3. Make sure "Cookies" are enabled in Postman settings
+**Option 1: API Key Header**
+
+1.  Go to the **Headers** tab.
+2.  Add Key: `x-api-key`, Value: `test` (or your configured key).
+
+**Option 2: Browser Cookies**
+
+1.  Send a `POST` request to `/api/login` with username/password.
+2.  Postman automatically saves cookies - subsequent requests will include them.
 
 #### JavaScript (Browser/Fetch)
 
@@ -440,7 +455,7 @@ The admin panel is served at the following routes:
    ```
    ADMIN_USER=admin
    ADMIN_PASS=yourpassword
-   JWT_SECRET=your-secret-key
+   API_KEY=test
    PORT=3000
    ```
 
