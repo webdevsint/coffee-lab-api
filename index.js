@@ -41,12 +41,7 @@ app.use((req, res, next) => {
 const isAuthenticated = (req) => {
   const token = req.cookies.admin_token;
   if (!token) return false;
-  try {
-    jwt.verify(token, process.env.JWT_SECRET);
-    return true;
-  } catch (err) {
-    return false;
-  }
+  return token === process.env.API_KEY;
 };
 
 // Auth Middleware for API routes
@@ -57,39 +52,36 @@ const authMiddleware = (req, res, next) => {
     req.path.startsWith("/uploads/") ||
     req.path.endsWith(".css") ||
     req.path.endsWith(".js") ||
-    req.path.includes("sheetjs")
+    req.path.includes("sheetjs") ||
+    (req.method === "GET" && req.path.startsWith("/api/"))
   ) {
     return next();
   }
 
-  const token = req.cookies.admin_token;
-  if (!token) {
+  // Check for API Key in cookie or header
+  const token = req.cookies.admin_token || req.headers["x-api-key"];
+
+  if (!token || token !== process.env.API_KEY) {
+    // Determine response type (JSON vs Redirect)
     if (
       req.xhr ||
       (req.headers.accept && req.headers.accept.indexOf("json") > -1)
     ) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Unauthorized: Invalid API Key" });
     }
+    // Only redirect browser requests if no token found
+    if (!token) return res.redirect("/login");
+    // If token exists but invalid, clear it and redirect
+    res.clearCookie("admin_token");
     return res.redirect("/login");
   }
 
-  try {
-    jwt.verify(token, process.env.JWT_SECRET);
-    next();
-  } catch (err) {
-    res.clearCookie("admin_token");
-    if (
-      req.xhr ||
-      (req.headers.accept && req.headers.accept.indexOf("json") > -1)
-    ) {
-      return res.status(401).json({ message: "Invalid token" });
-    }
-    return res.redirect("/login");
-  }
+  next();
 };
 
 app.use(authMiddleware);
 
+// Login Route
 // Login Route
 app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
@@ -97,16 +89,19 @@ app.post("/api/login", (req, res) => {
     username === process.env.ADMIN_USER &&
     password === process.env.ADMIN_PASS
   ) {
-    const token = jwt.sign({ user: username }, process.env.JWT_SECRET, {
-      expiresIn: "8h",
-    });
-    res.cookie("admin_token", token, {
+    // Set API Key in cookie
+    res.cookie("admin_token", process.env.API_KEY, {
       httpOnly: true,
-      maxAge: 8 * 60 * 60 * 1000,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
     });
-    return res.json({ success: true });
+    return res
+      .status(200)
+      .json({ success: true, message: "Logged in successfully" });
   }
-  res.status(401).json({ success: false, message: "Invalid credentials" });
+  return res
+    .status(401)
+    .json({ success: false, message: "Invalid credentials" });
 });
 
 // Logout Route
@@ -122,19 +117,21 @@ app.use("/uploads", express.static(uploadsPath));
 app.use(
   express.static(path.join(__dirname, "public"), {
     index: false, // Disable automatic index.html serving
+    extensions: ["html"], // Allow serving without extension if direct match fails, but we handle it manually below for strictness
   }),
 );
 
-// Login page route - redirect to dashboard if already logged in
-app.get("/login", (req, res) => {
-  if (isAuthenticated(req)) {
-    return res.redirect("/");
+// Strict Routing Middleware: Redirect .html to clean URL
+app.use((req, res, next) => {
+  if (req.path.endsWith(".html")) {
+    const cleanPath = req.path.slice(0, -5);
+    return res.redirect(301, cleanPath);
   }
-  res.sendFile(path.join(__dirname, "public", "login.html"));
+  next();
 });
 
-// Also handle /login.html for backward compatibility
-app.get("/login.html", (req, res) => {
+// Login page route - redirect to dashboard if already logged in
+app.get("/login", (req, res) => {
   if (isAuthenticated(req)) {
     return res.redirect("/");
   }
@@ -152,6 +149,10 @@ const protectedPages = [
   { route: "/add-order", file: "add-order.html" },
   { route: "/add-blog", file: "add-blog.html" },
   { route: "/add-coupon", file: "add-coupon.html" },
+  { route: "/edit-product", file: "add-product.html" },
+  { route: "/edit-order", file: "add-order.html" },
+  { route: "/edit-blog", file: "add-blog.html" },
+  { route: "/edit-coupon", file: "add-coupon.html" },
 ];
 
 protectedPages.forEach(({ route, file }) => {

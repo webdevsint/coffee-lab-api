@@ -16,13 +16,17 @@ The API is built with **Express.js** and uses a flat-file JSON database (`/data/
 
 ## 🔐 Authentication
 
-The API uses **Cookie-based JWT authentication**. All API endpoints except `/api/login` require authentication.
+The API uses **API Key authentication**.
+
+- **GET requests** to `/api/*` are **PUBLIC** (no auth required).
+- **POST/PUT/DELETE** requests require authentication.
 
 ### How Authentication Works
 
-1. **Login** to get an authentication cookie
-2. **Include the cookie** in subsequent requests
-3. The cookie (`admin_token`) is automatically set by the server and expires after 8 hours
+1.  **Login** to get an authentication cookie.
+2.  **Include the cookie** (`admin_token`) in subsequent requests.
+3.  **Alternatively**, send the API Key via `x-api-key` header.
+4.  The default API Key is `test` (configurable in `.env`).
 
 ### Login
 
@@ -40,10 +44,10 @@ The API uses **Cookie-based JWT authentication**. All API endpoints except `/api
 **Response (Success):**
 
 ```json
-{ "success": true }
+{ "message": "Logged in successfully" }
 ```
 
-The server sets an HTTP-only cookie named `admin_token` containing the JWT.
+The server sets an HTTP-only cookie named `admin_token` containing the API Key.
 
 ### Logout
 
@@ -403,17 +407,21 @@ curl -X POST http://localhost:3000/api/coupons \
 
 The admin panel is served at the following routes:
 
-| Route          | Description           |
-| :------------- | :-------------------- |
-| `/`            | Products Dashboard    |
-| `/orders`      | Orders Management     |
-| `/blogs`       | Blog Posts Management |
-| `/coupons`     | Coupons Management    |
-| `/add-product` | Add/Edit Product      |
-| `/add-order`   | Add/Edit Order        |
-| `/add-blog`    | Add/Edit Blog Post    |
-| `/add-coupon`  | Add/Edit Coupon       |
-| `/login`       | Login Page            |
+| Route           | Description           |
+| :-------------- | :-------------------- |
+| `/`             | Products Dashboard    |
+| `/orders`       | Orders Management     |
+| `/blogs`        | Blog Posts Management |
+| `/coupons`      | Coupons Management    |
+| `/add-product`  | Add Product           |
+| `/edit-product` | Edit Product          |
+| `/add-order`    | Add Order             |
+| `/edit-order`   | Edit Order            |
+| `/add-blog`     | Add Blog Post         |
+| `/edit-blog`    | Edit Blog Post        |
+| `/add-coupon`   | Add Coupon            |
+| `/edit-coupon`  | Edit Coupon           |
+| `/login`        | Login Page            |
 
 ---
 
@@ -453,4 +461,4 @@ The admin panel is served at the following routes:
 - **Slug Generation**: Slugs are auto-generated from `name` (Products) or `title` (Blogs) on creation. They are immutable afterwards.
 - **Image Deletion**: Deleting a product/blog permanently deletes its images from disk. This is irreversible.
 - **Historical Orders**: Order items snapshot the product name/price at time of purchase. Changing a product's price later does not affect past orders.
-- **Authentication**: All API routes except `/api/login` require authentication. Unauthenticated requests will receive a `401 Unauthorized` response.
+- **Authentication**: `GET` requests are public. Other methods require `admin_token` cookie or `x-api-key` header.

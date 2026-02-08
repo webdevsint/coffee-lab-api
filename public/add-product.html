@@ -639,7 +639,7 @@
                 if (response.ok) {
                     isDirty = false;
                     showToast(productId ? 'Product updated successfully' : 'Product added successfully', 'success');
-                    setTimeout(() => window.location.href = 'index.html', 1500);
+                    setTimeout(() => window.location.href = '/', 1500);
                 } else {
                     const err = await response.json();
                     showToast('Error: ' + (err.message || 'Failed to save'), 'error');
@@ -682,6 +682,7 @@
 
             if (productId && productType) {
                 document.getElementById('pageTitle').textContent = "Edit Product";
+                document.title = 'Coffee Lab Admin - Edit Product';
                 document.getElementById('type').value = productType;
                 document.getElementById('type').disabled = true;
                 handleTypeChange(true);

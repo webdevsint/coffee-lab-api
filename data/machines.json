@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "name": "shadows of the",
+    "slug": "shadows-of-the-east",
+    "description": "gfdg",
+    "price": "3000",
+    "brand": "bunna",
+    "inStock": true,
+    "isFeatured": false,
+    "keywords": [
+      "new",
+      "fresh"
+    ],
+    "discountPercentage": 0,
+    "existingImages": "[]",
+    "model": "sd",
+    "specifications": {
+      "dsd": "dsd"
+    },
+    "features": {},
+    "images": [
+      "opt-1770569196743-WEB-LOGO-CLB-bb (1).webp"
+    ],
+    "id": "KmOZsJJP"
+  }
+]

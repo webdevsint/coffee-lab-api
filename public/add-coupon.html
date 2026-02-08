@@ -101,10 +101,10 @@
                 </div>
             </header>
 
-            <div class="px-4 lg:px-8 py-4 lg:py-8 space-y-8">
-                <div class="flex flex-col lg:grid lg:grid-cols-3 gap-8">
+            <div class="px-4 lg:px-8 py-4 lg:py-8 space-y-8 max-w-3xl mx-auto">
+                <div class="flex flex-col gap-8">
                     <!-- 1. Coupon Details -->
-                    <div class="lg:col-span-2 order-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">1. Coupon Details</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -126,7 +126,7 @@
                     </div>
 
                     <!-- 2. Usage Limits -->
-                    <div class="lg:col-span-2 order-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">2. Usage Limits</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -146,13 +146,13 @@
                     </div>
 
                     <!-- 3. Coupon Status -->
-                    <div class="lg:col-span-1 lg:order-2 order-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">3. Coupon Status</h3>
                         <div class="space-y-4">
-                            <div class="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 pb-4">
+                            <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800 pb-4">
                                 <div>
                                     <p class="text-sm font-bold text-gray-700 dark:text-gray-200">Active Status</p>
-                                    <p class="text-[11px] text-gray-500">Enable or disable this coupon</p>
+                                    <p class="text-[11px] text-gray-500 mt-0.5">Enable or disable this coupon</p>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input id="isActive" class="sr-only peer" type="checkbox" checked/>
@@ -213,6 +213,7 @@
                 const coupon = await response.json();
                 
                 document.getElementById('pageTitle').innerText = 'Edit Coupon';
+                document.title = 'Coffee Lab Admin - Edit Coupon';
                 document.getElementById('code').value = coupon.code;
                 document.getElementById('type').value = coupon.type;
                 document.getElementById('value').value = coupon.value;
@@ -263,7 +264,7 @@
 
                 if (response.ok) {
                     showToast(couponId ? 'Coupon updated!' : 'Coupon created!');
-                    setTimeout(() => window.location.href = 'coupons.html', 1500);
+                    setTimeout(() => window.location.href = '/coupons', 1500);
                 } else {
                     showToast('Error saving coupon', 'error');
                 }

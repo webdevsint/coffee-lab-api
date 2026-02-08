@@ -17,6 +17,7 @@ const optimizeImages = async (req, res, next) => {
 
     try {
       await sharp(originalPath)
+        .withMetadata()
         .resize({ width: 1200, withoutEnlargement: true })
         .toFormat("webp")
         .webp({ quality: 80 })

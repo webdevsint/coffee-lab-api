@@ -421,7 +421,7 @@
                 if (response.ok) {
                     isDirty = false;
                     showToast(blogId ? 'Blog post updated successfully' : 'Blog post published successfully', 'success');
-                    setTimeout(() => window.location.href = 'blogs.html', 1500);
+                    setTimeout(() => window.location.href = '/blogs', 1500);
                 } else {
                     const err = await response.json();
                     showToast('Error: ' + (err.message || 'Failed to save'), 'error');
@@ -465,6 +465,7 @@
 
             if (blogId) {
                 document.getElementById('pageTitle').textContent = "Edit Blog Post";
+                document.title = 'Coffee Lab Admin - Edit Blog Post';
                 const res = await fetch(`/api/blogs/${blogId}`);
                 const data = await res.json();
                 
