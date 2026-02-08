@@ -35,14 +35,8 @@
         }
     </script>
     <style type="text/tailwindcss">
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        .sidebar-active {
-            background-color: rgba(72, 54, 40, 0.1);
-            color: #483628;
-            border-right: 3px solid #483628;
-        }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .sidebar-active { background-color: rgba(72, 54, 40, 0.1); color: #483628; }
         .custom-scrollbar::-webkit-scrollbar {
             width: 4px;
         }
@@ -63,7 +57,7 @@
             background-color: #f3f4f6;
         }
         
-        .toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.75rem; pointer-events: none; }
+        .toast-container { position: absolute; bottom: 2rem; right: 2rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.75rem; pointer-events: none; }
         .toast { 
             pointer-events: auto;
         }
@@ -137,28 +131,32 @@
             </div>
         </div>
         <nav class="flex-1 mt-4 px-3 space-y-1">
-            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="index.html">
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="/">
                 <span class="material-symbols-outlined text-[20px] group-hover:text-primary">inventory_2</span>
                 Products
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium sidebar-active rounded-lg transition-all group" href="blogs.html">
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium sidebar-active rounded-lg transition-all group" href="/blogs">
                 <span class="material-symbols-outlined text-[20px]">article</span>
                 Blog
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="orders.html">
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="/orders">
                 <span class="material-symbols-outlined text-[20px] group-hover:text-primary">shopping_cart</span>
                 Orders
             </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="/coupons">
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">confirmation_number</span>
+                Coupons
+            </a>
         </nav>
         <div class="p-4 border-t border-gray-100 dark:border-gray-800">
-            <button class="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group">
+            <button onclick="handleLogout()" class="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group">
                 <span class="material-symbols-outlined text-[20px] group-hover:text-primary">logout</span>
                 Logout
             </button>
         </div>
     </aside>
 
-    <main class="main-content flex-1 ml-64 min-h-screen flex flex-col pt-16 lg:pt-0">
+    <main class="main-content flex-1 lg:ml-64 min-h-screen flex flex-col pt-16 lg:pt-0 min-w-0 overflow-x-hidden">
         <form id="blogForm" onsubmit="handleSubmit(event)">
             <header class="bg-white/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 lg:top-0 z-20 border-b border-gray-100 dark:border-gray-800 px-4 lg:px-8 py-4 lg:py-6">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -167,7 +165,7 @@
                         <p class="text-xs lg:text-sm text-gray-500 mt-0.5 lg:mt-1">Write and publish new content to the Coffee Lab blog</p>
                     </div>
                     <div class="flex items-center gap-2 sm:gap-3">
-                        <a href="blogs.html" class="px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 transition-colors">Cancel</a>
+                        <a href="/blogs" class="px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 transition-colors">Cancel</a>
                         <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold transition-transform active:scale-95 shadow-lg shadow-primary/20 flex-1 sm:flex-none">
                             Save Post
                         </button>
@@ -276,6 +274,16 @@
             const overlay = document.getElementById('sidebarOverlay');
             sidebar.classList.toggle('active');
             overlay.classList.toggle('active');
+        }
+
+        async function handleLogout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout failed:', error);
+                window.location.href = '/login';
+            }
         }
 
         const params = new URLSearchParams(window.location.search);
@@ -405,7 +413,7 @@
                 formData.append('image', imageInput.files[0]);
             }
 
-            const url = blogId ? `/blogs/${blogId}` : `/blogs`;
+            const url = blogId ? `/api/blogs/${blogId}` : `/api/blogs`;
             const method = blogId ? 'PUT' : 'POST';
 
             try {
@@ -457,7 +465,7 @@
 
             if (blogId) {
                 document.getElementById('pageTitle').textContent = "Edit Blog Post";
-                const res = await fetch(`/blogs/${blogId}`);
+                const res = await fetch(`/api/blogs/${blogId}`);
                 const data = await res.json();
                 
                 document.getElementById('title').value = data.title || '';

@@ -32,14 +32,8 @@
         }
     </script>
     <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        .sidebar-active {
-            background-color: rgba(72, 54, 40, 0.1);
-            color: #483628;
-            border-right: 3px solid #483628;
-        }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .sidebar-active { background-color: rgba(72, 54, 40, 0.1); color: #483628; }
         .custom-scrollbar::-webkit-scrollbar {
             width: 4px;
         }
@@ -50,7 +44,7 @@
             background: #e5e7eb;
             border-radius: 10px;
         }
-        .dynamic-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .dynamic-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; min-width: 0; }
         .image-preview-card { position: relative; width: 6rem; height: 6rem; border-radius: 0.75rem; border-width: 2px; border-color: #f3f4f6; overflow: hidden; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); background-color: white; transition: all 0.2s; }
         .image-preview-card:hover { border-color: #483628; }
         .image-preview-card img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
@@ -65,7 +59,7 @@
         #lightbox img { max-width: 100%; max-height: 100%; border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transform: scale(0.95); transition: transform 0.3s; }
         #lightbox.active img { transform: scale(1); }
 
-        .toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.75rem; pointer-events: none; }
+        .toast-container { position: absolute; bottom: 2rem; right: 2rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.75rem; pointer-events: none; }
         .toast { 
             pointer-events: auto;
         }
@@ -132,28 +126,32 @@
             </div>
         </div>
         <nav class="flex-1 mt-4 px-3 space-y-1">
-            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium sidebar-active rounded-lg transition-all group" href="index.html">
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium sidebar-active rounded-lg transition-all group" href="/">
                 <span class="material-symbols-outlined text-[20px]">inventory_2</span>
                 Products
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="blogs.html">
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="/blogs">
                 <span class="material-symbols-outlined text-[20px] group-hover:text-primary">article</span>
                 Blog
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="orders.html">
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="/orders">
                 <span class="material-symbols-outlined text-[20px] group-hover:text-primary">shopping_cart</span>
                 Orders
             </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="/coupons">
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">confirmation_number</span>
+                Coupons
+            </a>
         </nav>
         <div class="p-4 border-t border-gray-100 dark:border-gray-800">
-            <button class="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group">
+            <button onclick="handleLogout()" class="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group">
                 <span class="material-symbols-outlined text-[20px] group-hover:text-primary">logout</span>
                 Logout
             </button>
         </div>
     </aside>
 
-    <main class="main-content flex-1 ml-64 min-h-screen flex flex-col pt-16 lg:pt-0">
+    <main class="main-content flex-1 lg:ml-64 min-h-screen flex flex-col pt-16 lg:pt-0 min-w-0 overflow-x-hidden">
         <form id="productForm" onsubmit="handleSubmit(event)">
             <header class="bg-white/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 lg:top-0 z-20 border-b border-gray-100 dark:border-gray-800 px-4 lg:px-8 py-4 lg:py-6">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -162,7 +160,7 @@
                         <p class="text-xs lg:text-sm text-gray-500 mt-0.5 lg:mt-1">Configure details for a new item in your inventory</p>
                     </div>
                     <div class="flex items-center gap-2 sm:gap-3">
-                        <a href="index.html" class="px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 transition-colors">Cancel</a>
+                        <a href="/" class="px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 transition-colors">Cancel</a>
                         <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold transition-transform active:scale-95 shadow-lg shadow-primary/20 flex-1 sm:flex-none">
                             Save Product
                         </button>
@@ -171,167 +169,168 @@
             </header>
 
             <div class="px-4 lg:px-8 py-4 lg:py-8 space-y-8 w-full">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-2 space-y-6">
-                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">1. Basic Information</h3>
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Product Name</label>
-                                    <input id="name" required class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="e.g. Lelit Bianca V3" type="text" oninput="generateSlug()"/>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Slug (URL Path)</label>
-                                    <div class="relative">
-                                        <input id="slug" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="lelit-bianca-v3" type="text"/>
-                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 text-sm">edit</span>
-                                    </div>
-                                    <p class="text-[10px] text-gray-400 mt-1 ml-1">Generated automatically via Name</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Description</label>
-                                    <textarea id="description" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Describe the product's features, history, and usage..." rows="6"></textarea>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">4. Media Assets</h3>
+                <div class="flex flex-col lg:grid lg:grid-cols-3 gap-8">
+                    <!-- 1. Basic Information -->
+                    <div class="lg:col-span-2 order-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">1. Basic Information</h3>
+                        <div class="space-y-4">
                             <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Upload Images</label>
-                                <div class="space-y-3">
-                                    <input type="file" id="images" name="images" multiple class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
-                                    <div id="imagePreview" class="flex flex-wrap gap-2 mt-4"></div>
-                                </div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Product Name</label>
+                                <input id="name" required class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="e.g. Lelit Bianca V3" type="text" oninput="generateSlug()"/>
                             </div>
-                        </div>
-
-                        <div id="technicalSection" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">5. Technical Data</h3>
-                            <div class="space-y-6">
-                                <div id="beans-only" class="space-y-4 hidden">
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Roast Level</label>
-                                            <input id="roast_level" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="e.g. Light"/>
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Grind Type</label>
-                                            <input id="grind_type" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="e.g. Whole Bean"/>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Cupping Notes (comma separated)</label>
-                                        <input id="cupping_notes" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="Fruity, Floral, Chocolate"/>
-                                    </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Slug (URL Path)</label>
+                                <div class="relative">
+                                    <input id="slug" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="lelit-bianca-v3" type="text"/>
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 text-sm">edit</span>
                                 </div>
-
-                                <div id="machines-only" class="space-y-6 hidden">
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Model</label>
-                                        <input id="model" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="e.g. V3 Special"/>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Specifications</label>
-                                            <div id="specsContainer"></div>
-                                            <button type="button" onclick="addDynamicRow('specsContainer')" class="text-xs font-bold text-primary mt-2 flex items-center gap-1">+ Add Spec</button>
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Features</label>
-                                            <div id="featuresContainer"></div>
-                                            <button type="button" onclick="addDynamicRow('featuresContainer')" class="text-xs font-bold text-primary mt-2 flex items-center gap-1">+ Add Feature</button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div id="consumables-only" class="space-y-4 hidden">
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Size</label>
-                                            <input id="size" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="e.g. 750ml"/>
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Flavour Profile</label>
-                                            <input id="flavour_profile" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="e.g. Vanilla"/>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Keywords / Tags</label>
-                                    <input id="keywords" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="manual, espresso, specialty" type="text"/>
-                                    <p class="text-[10px] text-gray-400 mt-1.5 ml-1 italic">Separate tags with commas</p>
-                                </div>
+                                <p class="text-[10px] text-gray-400 mt-1 ml-1">Generated automatically via Name</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Description</label>
+                                <textarea id="description" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Describe the product's features, history, and usage..." rows="6"></textarea>
                             </div>
                         </div>
                     </div>
 
-                    <div class="space-y-6">
-                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">2. Pricing & Type</h3>
-                            <div class="space-y-4">
-                                <div id="priceSection">
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Price (BDT)</label>
-                                    <div class="relative">
-                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">৳</span>
-                                        <input id="price" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg pl-8 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium" placeholder="0.00" type="number"/>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Discount (%)</label>
-                                    <div class="flex gap-2">
-                                        <div class="relative flex-1">
-                                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs">OFF</span>
-                                            <input id="discountPercentage" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium" placeholder="0" type="number" step="0.1"/>
-                                        </div>
-                                        <button type="button" onclick="applyDiscount()" class="px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-lg text-xs font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">Apply</button>
-                                    </div>
-                                </div>
-                                <div id="variantsSection" class="hidden">
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Product Variants (Size & Price)</label>
-                                    <div id="variantsContainer" class="space-y-2"></div>
-                                    <button type="button" onclick="addVariantRow()" class="text-xs font-bold text-primary mt-2 flex items-center gap-1">+ Add Variant</button>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Product Type</label>
-                                    <select id="type" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" onchange="handleTypeChange()">
-                                        <option value="machines">Machine</option>
-                                        <option value="beans">Bean</option>
-                                        <option value="syrups">Syrup</option>
-                                        <option value="sauces">Sauce</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Brand</label>
-                                    <input id="brand" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Brand Name" type="text" />
+                    <!-- 2. Pricing & Type -->
+                    <div class="lg:col-span-1 order-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">2. Pricing & Type</h3>
+                        <div class="space-y-4">
+                            <div id="priceSection">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Price (BDT)</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">৳</span>
+                                    <input id="price" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg pl-8 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium" placeholder="0.00" type="number"/>
                                 </div>
                             </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Discount (%)</label>
+                                <div class="flex gap-2">
+                                    <div class="relative flex-1 min-w-0">
+                                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs">OFF</span>
+                                        <input id="discountPercentage" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium" placeholder="0" type="number" step="0.1"/>
+                                    </div>
+                                    <button type="button" onclick="applyDiscount()" class="px-3 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-lg text-xs font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all whitespace-nowrap">Apply</button>
+                                </div>
+                            </div>
+                            <div id="variantsSection" class="hidden">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Product Variants (Size & Price)</label>
+                                <div id="variantsContainer" class="space-y-2"></div>
+                                <button type="button" onclick="addVariantRow()" class="text-xs font-bold text-primary mt-2 flex items-center gap-1">+ Add Variant</button>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Product Type</label>
+                                <select id="type" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" onchange="handleTypeChange()">
+                                    <option value="machines">Machine</option>
+                                    <option value="beans">Bean</option>
+                                    <option value="syrups">Syrup</option>
+                                    <option value="sauces">Sauce</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Brand</label>
+                                <input id="brand" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Brand Name" type="text" />
+                            </div>
                         </div>
+                    </div>
 
-                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">3. E-commerce & Stock</h3>
-                            <div class="space-y-6">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-sm font-bold text-gray-700 dark:text-gray-200">Is Featured</p>
-                                        <p class="text-[11px] text-gray-500">Enable homepage highlight</p>
-                                    </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input id="isFeatured" class="sr-only peer" type="checkbox"/>
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                                    </label>
+                    <!-- 3. E-commerce & Stock -->
+                    <div class="lg:col-span-1 lg:order-4 order-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">3. E-commerce & Stock</h3>
+                        <div class="space-y-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-bold text-gray-700 dark:text-gray-200">Is Featured</p>
+                                    <p class="text-[11px] text-gray-500">Enable homepage highlight</p>
                                 </div>
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-sm font-bold text-gray-700 dark:text-gray-200">In Stock Status</p>
-                                        <p class="text-[11px] text-gray-500">Show as available</p>
-                                    </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input id="inStock" checked class="sr-only peer" type="checkbox"/>
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                                    </label>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input id="isFeatured" class="sr-only peer" type="checkbox"/>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-bold text-gray-700 dark:text-gray-200">In Stock Status</p>
+                                    <p class="text-[11px] text-gray-500">Show as available</p>
                                 </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input id="inStock" checked class="sr-only peer" type="checkbox"/>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Media Assets -->
+                    <div class="lg:col-span-2 lg:order-3 order-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">4. Media Assets</h3>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Upload Images</label>
+                            <div class="space-y-3">
+                                <input type="file" id="images" name="images" multiple class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
+                                <div id="imagePreview" class="flex flex-wrap gap-2 mt-4"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Technical Data -->
+                    <div id="technicalSection" class="lg:col-span-2 order-5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">5. Technical Data</h3>
+                        <div class="space-y-6">
+                            <div id="beans-only" class="space-y-4 hidden">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Roast Level</label>
+                                        <input id="roast_level" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="e.g. Light"/>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Grind Type</label>
+                                        <input id="grind_type" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="e.g. Whole Bean"/>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Cupping Notes (comma separated)</label>
+                                    <input id="cupping_notes" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="Fruity, Floral, Chocolate"/>
+                                </div>
+                            </div>
+
+                            <div id="machines-only" class="space-y-6 hidden">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Model</label>
+                                    <input id="model" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="e.g. V3 Special"/>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Specifications</label>
+                                        <div id="specsContainer"></div>
+                                        <button type="button" onclick="addDynamicRow('specsContainer')" class="text-xs font-bold text-primary mt-2 flex items-center gap-1">+ Add Spec</button>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Features</label>
+                                        <div id="featuresContainer"></div>
+                                        <button type="button" onclick="addDynamicRow('featuresContainer')" class="text-xs font-bold text-primary mt-2 flex items-center gap-1">+ Add Feature</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="consumables-only" class="space-y-4 hidden">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Size</label>
+                                        <input id="size" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="e.g. 750ml"/>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Flavour Profile</label>
+                                        <input id="flavour_profile" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all" type="text" placeholder="e.g. Vanilla"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Keywords / Tags</label>
+                                <input id="keywords" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="manual, espresso, specialty" type="text"/>
+                                <p class="text-[10px] text-gray-400 mt-1.5 ml-1 italic">Separate tags with commas</p>
                             </div>
                         </div>
                     </div>
@@ -358,6 +357,16 @@
             const overlay = document.getElementById('sidebarOverlay');
             sidebar.classList.toggle('active');
             overlay.classList.toggle('active');
+        }
+
+        async function handleLogout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout failed:', error);
+                window.location.href = '/login';
+            }
         }
 
         const params = new URLSearchParams(window.location.search);
@@ -471,11 +480,17 @@
         function addVariantRow(size = '', price = '') {
             const container = document.getElementById('variantsContainer');
             const div = document.createElement('div');
-            div.className = "dynamic-row";
+            div.className = "dynamic-row flex-col sm:flex-row bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700/50";
             div.innerHTML = `
-                <input type="text" placeholder="Size (e.g. 250gm)" value="${size}" class="flex-[2] bg-gray-50 border-gray-200 rounded-lg text-xs p-2">
-                <input type="number" placeholder="Price" value="${price}" class="flex-1 bg-gray-50 border-gray-200 rounded-lg text-xs p-2">
-                <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 hover:text-accent-red"><span class="material-symbols-outlined text-sm">close</span></button>
+                <div class="flex-[2] min-w-0">
+                    <input type="text" placeholder="Size (e.g. 250gm)" value="${size}" class="w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-lg text-xs p-2 focus:ring-1 focus:ring-primary/20">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <input type="number" placeholder="Price" value="${price}" class="w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-lg text-xs p-2 focus:ring-1 focus:ring-primary/20">
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 hover:text-accent-red self-end sm:self-center transition-colors">
+                    <span class="material-symbols-outlined !text-lg">delete</span>
+                </button>
             `;
             container.appendChild(div);
         }
@@ -483,11 +498,17 @@
         function addDynamicRow(containerId, key = '', value = '') {
             const container = document.getElementById(containerId);
             const div = document.createElement('div');
-            div.className = "dynamic-row";
+            div.className = "dynamic-row flex-col sm:flex-row bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700/50 items-stretch sm:items-start";
             div.innerHTML = `
-                <input type="text" placeholder="Key" value="${key}" class="flex-1 bg-gray-50 border-gray-200 rounded-lg text-xs p-2">
-                <input type="text" placeholder="Value" value="${value}" class="flex-1 bg-gray-50 border-gray-200 rounded-lg text-xs p-2">
-                <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 hover:text-accent-red"><span class="material-symbols-outlined text-sm">close</span></button>
+                <div class="flex-1 min-w-0">
+                    <input type="text" placeholder="Key" value="${key}" class="w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-lg text-xs p-2 focus:ring-1 focus:ring-primary/20">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <input type="text" placeholder="Value" value="${value}" class="w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-lg text-xs p-2 focus:ring-1 focus:ring-primary/20">
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 hover:text-accent-red self-end sm:self-center transition-colors">
+                    <span class="material-symbols-outlined !text-lg">delete</span>
+                </button>
             `;
             container.appendChild(div);
         }
@@ -610,7 +631,7 @@
                 formData.append('features', JSON.stringify(collectDynamicProps('featuresContainer')));
             }
 
-            const url = productId ? `/${productType}/${productId}` : `/${type}`;
+            const url = productId ? `/api/${productType}/${productId}` : `/api/${type}`;
             const method = productId ? 'PUT' : 'POST';
 
             try {
@@ -665,7 +686,7 @@
                 document.getElementById('type').disabled = true;
                 handleTypeChange(true);
 
-                const res = await fetch(`/${productType}/${productId}`);
+                const res = await fetch(`/api/${productType}/${productId}`);
                 const data = await res.json();
                 
                 document.getElementById('name').value = data.name || '';

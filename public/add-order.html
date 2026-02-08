@@ -27,8 +27,8 @@
     </script>
     <style>
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        .sidebar-active { background-color: rgba(72, 54, 40, 0.1); color: #483628; border-right: 3px solid #483628; }
-        .toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.75rem; pointer-events: none; }
+        .sidebar-active { background-color: rgba(72, 54, 40, 0.1); color: #483628; }
+        .toast-container { position: absolute; bottom: 2rem; right: 2rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.75rem; pointer-events: none; }
         .toast { pointer-events: auto; }
         
         .sidebar { transition: transform 0.3s ease; }
@@ -74,22 +74,26 @@
                 </div>
             </div>
         </div>
-        <nav class="flex-1 mt-4 px-3 space-y-1 text-gray-600 dark:text-gray-400">
-            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="index.html">
+        <nav class="flex-1 mt-4 px-3 space-y-1">
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="/">
                 <span class="material-symbols-outlined text-[20px] group-hover:text-primary">inventory_2</span>
                 Products
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="blogs.html">
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="/blogs">
                 <span class="material-symbols-outlined text-[20px] group-hover:text-primary">article</span>
                 Blog
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium sidebar-active rounded-lg transition-all group" href="orders.html">
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium sidebar-active rounded-lg transition-all group" href="/orders">
                 <span class="material-symbols-outlined text-[20px]">shopping_cart</span>
                 Orders
             </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="/coupons">
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">confirmation_number</span>
+                Coupons
+            </a>
         </nav>
         <div class="p-4 border-t border-gray-100 dark:border-gray-800">
-            <button class="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group">
+            <button onclick="handleLogout()" class="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group">
                 <div class="flex items-center gap-3">
                     <span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">logout</span>
                     Logout
@@ -98,7 +102,7 @@
         </div>
     </aside>
 
-    <main class="main-content flex-1 ml-64 min-h-screen flex flex-col pt-16 lg:pt-0">
+    <main class="main-content flex-1 lg:ml-64 min-h-screen flex flex-col pt-16 lg:pt-0 min-w-0 overflow-x-hidden">
         <form id="orderForm" onsubmit="handleSubmit(event)">
             <header class="bg-white/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-20 border-b border-gray-100 dark:border-gray-800 px-4 lg:px-8 py-4 lg:py-6">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -107,7 +111,7 @@
                         <p class="text-xs lg:text-sm text-gray-500 mt-0.5 lg:mt-1">Add details for a new customer purchase</p>
                     </div>
                     <div class="flex items-center gap-2 sm:gap-3">
-                        <a href="orders.html" class="px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 transition-colors">Cancel</a>
+                        <a href="/orders" class="px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 transition-colors">Cancel</a>
                         <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold transition-transform active:scale-95 shadow-lg shadow-primary/20 flex-1 sm:flex-none">
                             Save Order
                         </button>
@@ -116,70 +120,70 @@
             </header>
 
             <div class="px-4 lg:px-8 py-4 lg:py-8 space-y-8">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- Left Column: Customer & Shipping -->
-                    <div class="lg:col-span-2 space-y-6">
-                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">1. Customer Information</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Customer Name</label>
-                                    <input id="customerName" required class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Enter name" type="text"/>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Phone Number</label>
-                                    <input id="phone" required class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Enter phone" type="tel"/>
-                                </div>
-                                <div class="md:col-span-2">
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Email (Optional)</label>
-                                    <input id="email" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Enter email" type="email"/>
-                                </div>
-                                <div class="md:col-span-2">
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Address</label>
-                                    <textarea id="address" required class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Enter full delivery address" rows="3"></textarea>
-                                </div>
+                <div class="flex flex-col lg:grid lg:grid-cols-3 gap-8">
+                    <!-- 1. Customer Information -->
+                    <div class="lg:col-span-2 order-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">1. Customer Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Customer Name</label>
+                                <input id="customerName" required class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Enter name" type="text"/>
                             </div>
-                        </div>
-
-                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">2. Order Items</h3>
-                            <div id="itemsContainer" class="space-y-4">
-                                <!-- Order items will be added here -->
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Phone Number</label>
+                                <input id="phone" required class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Enter phone" type="tel"/>
                             </div>
-                            <button type="button" onclick="addItemRow()" class="text-xs font-bold text-primary mt-4 flex items-center gap-1 hover:underline">
-                                <span class="material-symbols-outlined text-sm">add_circle</span>
-                                Add Another Product
-                            </button>
-                        </div>
-
-                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">3. Delivery & Extra Info</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Delivery Fee (BDT)</label>
-                                    <input id="deliveryFee" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value="60" type="number" oninput="calculateTotal()"/>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Payment Method</label>
-                                    <select id="paymentMethod" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
-                                        <option value="Cash on Delivery">Cash on Delivery</option>
-                                        <option value="bKash">bKash</option>
-                                        <option value="Nagad">Nagad</option>
-                                        <option value="Bank Transfer">Bank Transfer</option>
-                                    </select>
-                                </div>
-                                <div class="md:col-span-2">
-                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Delivery Note</label>
-                                    <textarea id="deliveryNote" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Any special instructions for delivery..." rows="2"></textarea>
-                                </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Email (Optional)</label>
+                                <input id="email" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Enter email" type="email"/>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Address</label>
+                                <textarea id="address" required class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Enter full delivery address" rows="3"></textarea>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Right Column: Summary & Status -->
-                    <div class="space-y-6">
-                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">4. Order Status</h3>
+                    <!-- 2. Order Items -->
+                    <div class="lg:col-span-2 order-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">2. Order Items</h3>
+                        <div id="itemsContainer" class="space-y-4">
+                            <!-- Order items will be added here -->
+                        </div>
+                        <button type="button" onclick="addItemRow()" class="text-xs font-bold text-primary mt-4 flex items-center gap-1 hover:underline">
+                            <span class="material-symbols-outlined text-sm">add_circle</span>
+                            Add Another Product
+                        </button>
+                    </div>
+
+                    <!-- 3. Delivery & Extra Info -->
+                    <div class="lg:col-span-2 order-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">3. Delivery & Extra Info</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Delivery Fee (BDT)</label>
+                                <input id="deliveryFee" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value="60" type="number" oninput="calculateTotal()"/>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Payment Method</label>
+                                <select id="paymentMethod" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+                                    <option value="Cash on Delivery">Cash on Delivery</option>
+                                    <option value="bKash">bKash</option>
+                                    <option value="Nagad">Nagad</option>
+                                    <option value="Bank Transfer">Bank Transfer</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Delivery Note</label>
+                                <textarea id="deliveryNote" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Any special instructions for delivery..." rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Order Status -->
+                    <div class="lg:col-span-1 lg:order-2 order-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">4. Order Status</h3>
+                        <div class="space-y-4">
                             <select id="status" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-bold">
                                 <option value="Pending">Pending</option>
                                 <option value="Confirmed">Confirmed</option>
@@ -187,36 +191,47 @@
                                 <option value="Delivered">Delivered</option>
                                 <option value="Cancelled">Cancelled</option>
                             </select>
+                            <div class="mt-4 flex items-center justify-between py-2 border-t border-gray-50 dark:border-gray-800 pt-4">
+                                <div>
+                                    <p class="text-sm font-bold text-gray-700 dark:text-gray-200">Paid Status</p>
+                                    <p class="text-[11px] text-gray-500">Mark if payment received</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input id="isPaid" class="sr-only peer" type="checkbox"/>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
                         </div>
+                    </div>
 
-                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm sticky top-24">
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">5. Summary</h3>
-                            <div class="space-y-3">
-                                <div class="flex justify-between text-sm text-gray-500">
-                                    <span>Subtotal</span>
-                                    <span id="summarySubtotal">৳0</span>
-                                </div>
-                                <div class="flex justify-between text-sm text-gray-500">
-                                    <span>Delivery Fee</span>
-                                    <span id="summaryDelivery">৳60</span>
-                                </div>
-                                <div class="flex flex-col gap-2">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-sm text-gray-500">Extra Discount</span>
-                                        <div class="flex bg-gray-100 dark:bg-gray-800 p-0.5 rounded-lg">
-                                            <button type="button" onclick="setDiscountType('flat')" id="btnFlat" class="px-2 py-1 text-[10px] font-bold rounded-md transition-all bg-white dark:bg-gray-700 shadow-sm text-primary">FLAT</button>
-                                            <button type="button" onclick="setDiscountType('percent')" id="btnPercent" class="px-2 py-1 text-[10px] font-bold rounded-md transition-all text-gray-400">%</button>
-                                        </div>
+                    <!-- 5. Summary -->
+                    <div class="lg:col-span-1 lg:order-4 order-5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm lg:sticky lg:top-24">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">5. Summary</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between text-sm text-gray-500">
+                                <span>Subtotal</span>
+                                <span id="summarySubtotal">৳0</span>
+                            </div>
+                            <div class="flex justify-between text-sm text-gray-500">
+                                <span>Delivery Fee</span>
+                                <span id="summaryDelivery">৳60</span>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-500">Extra Discount</span>
+                                    <div class="flex bg-gray-100 dark:bg-gray-800 p-0.5 rounded-lg">
+                                        <button type="button" onclick="setDiscountType('flat')" id="btnFlat" class="px-2 py-1 text-[10px] font-bold rounded-md transition-all bg-white dark:bg-gray-700 shadow-sm text-primary">FLAT</button>
+                                        <button type="button" onclick="setDiscountType('percent')" id="btnPercent" class="px-2 py-1 text-[10px] font-bold rounded-md transition-all text-gray-400">%</button>
                                     </div>
-                                    <input id="extraDiscount" class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-lg px-3 py-2 text-sm text-right focus:ring-1 focus:ring-primary/20" type="number" value="0" oninput="calculateTotal()"/>
-                                    <input type="hidden" id="discountType" value="flat">
                                 </div>
-                                <div class="pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                                    <span class="text-base font-black text-gray-900 dark:text-gray-100 uppercase tracking-tight">Total</span>
-                                    <div class="text-right">
-                                        <span id="summaryTotal" class="text-2xl font-black text-primary">৳0</span>
-                                        <p class="text-[10px] text-gray-400 font-medium">VAT INCLUDED (IF APPLICABLE)</p>
-                                    </div>
+                                <input id="extraDiscount" class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-lg px-3 py-2 text-sm text-right focus:ring-1 focus:ring-primary/20" type="number" value="0" oninput="calculateTotal()"/>
+                                <input type="hidden" id="discountType" value="flat">
+                            </div>
+                            <div class="pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                                <span class="text-base font-black text-gray-900 dark:text-gray-100 uppercase tracking-tight">Total</span>
+                                <div class="text-right">
+                                    <span id="summaryTotal" class="text-2xl font-black text-primary">৳0</span>
+                                    <p class="text-[10px] text-gray-400 font-medium">VAT INCLUDED (IF APPLICABLE)</p>
                                 </div>
                             </div>
                         </div>
@@ -234,6 +249,16 @@
             const overlay = document.getElementById('sidebarOverlay');
             sidebar.classList.toggle('active');
             overlay.classList.toggle('active');
+        }
+
+        async function handleLogout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout failed:', error);
+                window.location.href = '/login';
+            }
         }
 
         const params = new URLSearchParams(window.location.search);
@@ -268,7 +293,7 @@
 
         async function fetchProducts() {
             const entities = ['beans', 'machines', 'syrups', 'sauces'];
-            const all = await Promise.all(entities.map(e => fetch(`/${e}`).then(r => r.json())));
+            const all = await Promise.all(entities.map(e => fetch(`/api/${e}`).then(r => r.json())));
             allProducts = all.flat();
             if (!orderId) addItemRow(); // Add initial row only if creating new
         }
@@ -277,7 +302,7 @@
             const container = document.getElementById('itemsContainer');
             const rowId = 'row-' + Math.random().toString(36).substr(2, 9);
             const div = document.createElement('div');
-            div.className = "dynamic-row bg-gray-50/50 dark:bg-gray-800/20 p-4 rounded-xl border border-gray-100 dark:border-gray-700/50";
+            div.className = "dynamic-row flex-col sm:flex-row bg-gray-50/50 dark:bg-gray-800/20 p-4 rounded-xl border border-gray-100 dark:border-gray-700/50 items-stretch sm:items-start";
             div.id = rowId;
 
             // Check if product still exists
@@ -288,7 +313,7 @@
             const deletedOption = (selectedId && !exists) ? `<option value="${selectedId}" selected>${storedName || 'Deleted Product'} (৳${storedPrice})</option>` : '';
             
             div.innerHTML = `
-                <div class="flex-1 space-y-3">
+                <div class="flex-1 space-y-3 min-w-0">
                     <select class="product-select w-full bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg text-sm px-3 py-2 cursor-pointer focus:ring-1 focus:ring-primary/20" onchange="handleProductChange('${rowId}')">
                         <option value="">Select Product...</option>
                         ${deletedOption}
@@ -299,7 +324,7 @@
                         <input type="number" value="${quantity}" min="1" class="qty-input w-20 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg text-xs px-3 py-2 text-center" oninput="calculateTotal()">
                     </div>
                 </div>
-                <div class="text-right flex flex-col items-end gap-2 pt-2">
+                <div class="text-right flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 pt-2 sm:pt-2 border-t sm:border-t-0 border-gray-100 dark:border-gray-700 mt-2 sm:mt-0 pt-3 sm:pt-0">
                     <span class="row-total font-bold text-primary">৳0</span>
                     <button type="button" onclick="this.closest('.dynamic-row').remove(); calculateTotal()" class="text-gray-300 hover:text-accent-red bg-white dark:bg-gray-800 p-1.5 rounded-lg border border-gray-100 dark:border-gray-700 transition-colors">
                         <span class="material-symbols-outlined !text-lg">delete</span>
@@ -448,10 +473,11 @@
                 totalAmount,
                 paymentMethod: document.getElementById('paymentMethod').value,
                 deliveryNote: document.getElementById('deliveryNote').value,
-                status: document.getElementById('status').value
+                status: document.getElementById('status').value,
+                isPaid: document.getElementById('isPaid').checked
             };
 
-            const url = orderId ? `/orders/${orderId}` : '/orders';
+            const url = orderId ? `/api/orders/${orderId}` : '/api/orders';
             const method = orderId ? 'PUT' : 'POST';
 
             try {
@@ -482,7 +508,7 @@
             if (orderId) {
                 document.getElementById('pageTitle').textContent = "Edit Order";
                 try {
-                    const res = await fetch(`/orders/${orderId}`);
+                    const res = await fetch(`/api/orders/${orderId}`);
                     const order = await res.json();
                     
                     document.getElementById('customerName').value = order.customerName || '';
@@ -497,6 +523,7 @@
                     if (order.discountType) {
                         setDiscountType(order.discountType);
                     }
+                    document.getElementById('isPaid').checked = order.isPaid === true;
 
                     if (order.items && order.items.length > 0) {
                         document.getElementById('itemsContainer').innerHTML = '';

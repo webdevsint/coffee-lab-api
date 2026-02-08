@@ -1,0 +1,17 @@
+[
+  {
+    "code": "TEST",
+    "type": "percentage",
+    "value": 10,
+    "expiryDate": "2026-02-09",
+    "maxUses": 5,
+    "maxDiscount": 250,
+    "isActive": true,
+    "id": "Nj-iz41z",
+    "slug": "item",
+    "isFeatured": false,
+    "keywords": [],
+    "images": [],
+    "currentUses": 0
+  }
+]

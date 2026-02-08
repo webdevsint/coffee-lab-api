@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Coffee Lab Admin - Add Coupon</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#483628",
+                        "background-light": "#fafafa",
+                        "background-dark": "#1c1e22",
+                        "accent-green": "#7CA17C",
+                        "accent-red": "#CC7070",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .sidebar-active { background-color: rgba(72, 54, 40, 0.1); color: #483628; }
+        .sidebar { transition: transform 0.3s ease; }
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); z-index: 1001; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0 !important; }
+        }
+        .toast-container { position: absolute; bottom: 2rem; right: 2rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.75rem; pointer-events: none; }
+        .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1000; display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-gray-100 antialiased min-h-screen flex">
+    
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <aside id="sidebar" class="sidebar w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-background-dark flex flex-col fixed h-full z-[1001]">
+        <div class="p-6">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center">
+                    <img src="logo.png" alt="Coffee Lab Logo" class="w-full h-auto">
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold tracking-tight text-primary uppercase">Coffee Lab</h1>
+                    <p class="text-[10px] text-gray-500 font-medium">ADMIN PANEL</p>
+                </div>
+            </div>
+        </div>
+        <nav class="flex-1 mt-4 px-3 space-y-1">
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="/">
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">inventory_2</span>
+                Products
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="/blogs">
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">article</span>
+                Blog
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="/orders">
+                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">shopping_cart</span>
+                Orders
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium sidebar-active rounded-lg transition-all group" href="/coupons">
+                <span class="material-symbols-outlined text-[20px]">confirmation_number</span>
+                Coupons
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-100 dark:border-gray-800">
+            <button onclick="handleLogout()" class="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">logout</span>
+                    Logout
+                </div>
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content flex-1 lg:ml-64 min-h-screen flex flex-col pt-16 lg:pt-0 min-w-0 overflow-x-hidden">
+        <form id="couponForm" onsubmit="handleSubmit(event)">
+            <header class="bg-white/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-20 border-b border-gray-100 dark:border-gray-800 px-4 lg:px-8 py-4 lg:py-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 id="pageTitle" class="text-2xl lg:text-3xl font-black text-primary tracking-tight">Add New Coupon</h2>
+                        <p class="text-xs lg:text-sm text-gray-500 mt-0.5 lg:mt-1">Configure discount rules and usage limits</p>
+                    </div>
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <a href="/coupons" class="px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 transition-colors">Cancel</a>
+                        <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-4 lg:px-6 py-2 lg:py-2.5 rounded-lg text-sm font-bold transition-transform active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2">
+                            <!-- <span class="material-symbols-outlined text-sm">save</span> -->
+                            Save Coupon
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="px-4 lg:px-8 py-4 lg:py-8 space-y-8">
+                <div class="flex flex-col lg:grid lg:grid-cols-3 gap-8">
+                    <!-- 1. Coupon Details -->
+                    <div class="lg:col-span-2 order-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">1. Coupon Details</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Coupon Code</label>
+                                <input id="code" required class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm font-mono focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="e.g. COFFEE20" type="text" style="text-transform: uppercase;"/>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Discount Type</label>
+                                <select id="type" required class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+                                    <option value="percentage">Percentage (%)</option>
+                                    <option value="flat">Flat Amount (৳)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Discount Value</label>
+                                <input id="value" required class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Enter amount or %" type="number" step="0.01"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Usage Limits -->
+                    <div class="lg:col-span-2 order-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">2. Usage Limits</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Expiry Date</label>
+                                <input id="expiryDate" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" type="date"/>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Maximum Uses</label>
+                                <input id="maxUses" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Unlimited if empty" type="number"/>
+                            </div>
+                            <div id="maxDiscountContainer">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Max Discount Amount (৳)</label>
+                                <input id="maxDiscount" class="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="e.g. 500" type="number"/>
+                                <p class="text-[10px] text-gray-400 mt-1 ml-1">Only applicable for percentage discounts</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Coupon Status -->
+                    <div class="lg:col-span-1 lg:order-2 order-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">3. Coupon Status</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 pb-4">
+                                <div>
+                                    <p class="text-sm font-bold text-gray-700 dark:text-gray-200">Active Status</p>
+                                    <p class="text-[11px] text-gray-500">Enable or disable this coupon</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input id="isActive" class="sr-only peer" type="checkbox" checked/>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        async function handleLogout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout failed:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const couponId = urlParams.get('id');
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `flex items-center w-full max-w-xs p-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 toast transition-all duration-500 opacity-0 translate-x-10`;
+            toast.innerHTML = `
+                <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 dark:bg-gray-700">
+                    <span class="material-symbols-outlined ${type === 'success' ? 'text-primary' : 'text-accent-red'} !text-xl">${type === 'success' ? 'check_circle' : 'error'}</span>
+                </div>
+                <div class="ms-3 text-sm font-medium text-gray-600 dark:text-gray-300">${message}</div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => { toast.classList.remove('opacity-0', 'translate-x-10'); }, 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-10');
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        async function fetchCoupon(id) {
+            try {
+                const response = await fetch(`/api/coupons/${id}`);
+                const coupon = await response.json();
+                
+                document.getElementById('pageTitle').innerText = 'Edit Coupon';
+                document.getElementById('code').value = coupon.code;
+                document.getElementById('type').value = coupon.type;
+                document.getElementById('value').value = coupon.value;
+                document.getElementById('expiryDate').value = coupon.expiryDate;
+                document.getElementById('maxUses').value = coupon.maxUses;
+                document.getElementById('maxDiscount').value = coupon.maxDiscount;
+                document.getElementById('isActive').checked = coupon.isActive;
+
+                handleTypeChange();
+            } catch (error) {
+                showToast('Failed to fetch coupon details', 'error');
+            }
+        }
+
+        function handleTypeChange() {
+            const type = document.getElementById('type').value;
+            const maxDiscountContainer = document.getElementById('maxDiscountContainer');
+            if (type === 'flat') {
+                maxDiscountContainer.classList.add('opacity-50', 'pointer-events-none');
+                document.getElementById('maxDiscount').value = '';
+            } else {
+                maxDiscountContainer.classList.remove('opacity-50', 'pointer-events-none');
+            }
+        }
+
+        document.getElementById('type').addEventListener('change', handleTypeChange);
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+            const formData = {
+                code: document.getElementById('code').value.toUpperCase(),
+                type: document.getElementById('type').value,
+                value: document.getElementById('value').value,
+                expiryDate: document.getElementById('expiryDate').value,
+                maxUses: document.getElementById('maxUses').value,
+                maxDiscount: document.getElementById('maxDiscount').value,
+                isActive: document.getElementById('isActive').checked
+            };
+
+            try {
+                const url = couponId ? `/api/coupons/${couponId}` : '/api/coupons';
+                const method = couponId ? 'PUT' : 'POST';
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    showToast(couponId ? 'Coupon updated!' : 'Coupon created!');
+                    setTimeout(() => window.location.href = 'coupons.html', 1500);
+                } else {
+                    showToast('Error saving coupon', 'error');
+                }
+            } catch (error) {
+                showToast('Request failed', 'error');
+            }
+        }
+
+        if (couponId) fetchCoupon(couponId);
+        handleTypeChange();
+    </script>
+</body>
+</html>

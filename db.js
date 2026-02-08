@@ -149,6 +149,18 @@ const db = {
       newItem.totalAmount = parseFloat(item.totalAmount) || 0;
     }
 
+    // Coupon specific enhancements
+    if (entity === "coupons") {
+      newItem.isActive = item.isActive === "true" || item.isActive === true;
+      newItem.value = parseFloat(item.value) || 0;
+      newItem.maxUses = parseInt(item.maxUses) || 0;
+      newItem.maxDiscount = parseFloat(item.maxDiscount) || 0;
+      newItem.currentUses = 0;
+      newItem.expiryDate = item.expiryDate || "";
+      newItem.type = item.type || "percentage"; // percentage or flat
+      newItem.code = (item.code || "").toUpperCase();
+    }
+
     data.push(newItem);
     writeData(entity, data);
     return newItem;
@@ -244,6 +256,25 @@ const db = {
         updates.items = JSON.parse(updates.items);
       } catch (e) {
         updates.items = [];
+      }
+    }
+
+    if (entity === "coupons") {
+      if (updates.hasOwnProperty("isActive")) {
+        updates.isActive =
+          updates.isActive === "true" || updates.isActive === true;
+      }
+      if (updates.hasOwnProperty("value")) {
+        updates.value = parseFloat(updates.value) || 0;
+      }
+      if (updates.hasOwnProperty("maxUses")) {
+        updates.maxUses = parseInt(updates.maxUses) || 0;
+      }
+      if (updates.hasOwnProperty("maxDiscount")) {
+        updates.maxDiscount = parseFloat(updates.maxDiscount) || 0;
+      }
+      if (updates.hasOwnProperty("code")) {
+        updates.code = (updates.code || "").toUpperCase();
       }
     }
 

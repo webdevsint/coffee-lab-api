@@ -3,9 +3,8 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Coffee Lab Admin - Orders</title>
+    <title>Coffee Lab Admin - Coupons</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script id="tailwind-config">
         tailwind.config = {
@@ -83,12 +82,12 @@
                 <span class="material-symbols-outlined text-[20px] group-hover:text-primary">article</span>
                 Blog
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium sidebar-active rounded-lg transition-all group" href="/orders">
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="/orders">
                 <span class="material-symbols-outlined text-[20px] group-hover:text-primary">shopping_cart</span>
                 Orders
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-all group" href="/coupons">
-                <span class="material-symbols-outlined text-[20px] group-hover:text-primary">confirmation_number</span>
+            <a class="flex items-center gap-3 px-4 py-3 text-sm font-medium sidebar-active rounded-lg transition-all group" href="/coupons">
+                <span class="material-symbols-outlined text-[20px]">confirmation_number</span>
                 Coupons
             </a>
         </nav>
@@ -106,17 +105,13 @@
         <header class="bg-white/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-20 border-b border-gray-100 dark:border-gray-800 px-4 lg:px-8 py-4 lg:py-6">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h2 class="text-2xl lg:text-3xl font-black text-primary tracking-tight">Orders</h2>
-                    <p class="text-xs lg:text-sm text-gray-500 mt-0.5 lg:mt-1">Manage customer purchases and deliveries</p>
+                    <h2 class="text-2xl lg:text-3xl font-black text-primary tracking-tight">Coupons</h2>
+                    <p class="text-xs lg:text-sm text-gray-500 mt-0.5 lg:mt-1">Create and manage discount codes</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button onclick="exportOrders()" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold transition-transform active:scale-95 shadow-sm flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">download</span>
-                        Export
-                    </button>
-                    <a href="/add-order" class="bg-primary hover:bg-primary/90 text-white px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold transition-transform active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2">
+                    <a href="/add-coupon" class="bg-primary hover:bg-primary/90 text-white px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-sm font-bold transition-transform active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2">
                         <span class="material-symbols-outlined text-sm">add</span>
-                        New Order
+                        New Coupon
                     </a>
                 </div>
             </div>
@@ -126,17 +121,7 @@
             <div class="flex flex-col md:flex-row items-center gap-4 bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm">
                 <div class="relative flex-1 w-full">
                     <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 text-sm">search</span>
-                    <input id="searchInput" type="text" placeholder="Search by customer, phone or order ID..." class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 transition-all">
-                </div>
-                <div class="flex items-center gap-2 w-full md:w-auto">
-                    <select id="statusFilter" class="flex-1 md:w-40 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm px-4 py-2 focus:ring-2 focus:ring-primary/20 transition-all">
-                        <option value="all">All Status</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Confirmed">Confirmed</option>
-                        <option value="Shipped">Shipped</option>
-                        <option value="Delivered">Delivered</option>
-                        <option value="Cancelled">Cancelled</option>
-                    </select>
+                    <input id="searchInput" type="text" placeholder="Search by coupon code..." class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 transition-all">
                 </div>
             </div>
 
@@ -145,19 +130,18 @@
                     <table class="w-full text-left border-collapse min-w-[1000px]">
                         <thead>
                             <tr class="text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-50 dark:border-gray-800">
-                                <th class="px-6 py-4">Order ID</th>
-                                <th class="px-6 py-4">Customer</th>
-                                <th class="px-6 py-4">Phone</th>
-                                <th class="px-6 py-4">Date</th>
-                                <th class="px-6 py-4">Items</th>
-                                <th class="px-6 py-4">Total</th>
-                                <th class="px-6 py-4">Paid</th>
+                                <th class="px-6 py-4">Code</th>
+                                <th class="px-6 py-4">Type</th>
+                                <th class="px-6 py-4">Value</th>
+                                <th class="px-6 py-4">Expiry</th>
+                                <th class="px-6 py-4">Uses</th>
+                                <th class="px-6 py-4">Max Discount</th>
                                 <th class="px-6 py-4">Status</th>
                                 <th class="px-6 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="ordersTableBody" class="divide-y divide-gray-50 dark:divide-gray-800 text-sm">
-                            <!-- Orders will be injected here -->
+                        <tbody id="couponsTableBody" class="divide-y divide-gray-50 dark:divide-gray-800 text-sm">
+                            <!-- Coupons will be injected here -->
                         </tbody>
                     </table>
                 </div>
@@ -214,44 +198,43 @@
             }, 4000);
         }
 
-        let allOrders = [];
+        let allCoupons = [];
 
-        async function fetchOrders() {
+        async function fetchCoupons() {
             try {
-                const response = await fetch('/api/orders');
-                allOrders = await response.json();
-                renderOrders(allOrders);
+                const response = await fetch('/api/coupons');
+                allCoupons = await response.json();
+                renderCoupons(allCoupons);
             } catch (error) {
-                showToast('Failed to fetch orders', 'error');
+                showToast('Failed to fetch coupons', 'error');
             }
         }
 
-        function renderOrders(orders) {
-            const tbody = document.getElementById('ordersTableBody');
-            tbody.innerHTML = orders.map(order => `
+        function renderCoupons(coupons) {
+            const tbody = document.getElementById('couponsTableBody');
+            tbody.innerHTML = coupons.map(coupon => `
                 <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
-                    <td class="px-6 py-4 font-mono text-[10px] text-gray-400">#${order.id}</td>
-                    <td class="px-6 py-4 font-bold text-gray-900 dark:text-gray-100">${order.customerName || 'N/A'}</td>
-                    <td class="px-6 py-4 text-gray-500">${order.phone || 'N/A'}</td>
-                    <td class="px-6 py-4 text-gray-500">${new Date(order.createdAt).toLocaleDateString()}</td>
-                    <td class="px-6 py-4 text-gray-500">${(order.items || []).length} items</td>
-                    <td class="px-6 py-4 font-bold text-primary">৳${order.totalAmount || 0}</td>
+                    <td class="px-6 py-4 font-black font-mono text-primary group">
+                        <span class="bg-primary/5 px-2 py-1 rounded border border-primary/10 tracking-wider">${coupon.code}</span>
+                    </td>
+                    <td class="px-6 py-4 uppercase text-[10px] font-bold text-gray-500">${coupon.type}</td>
+                    <td class="px-6 py-4 font-bold text-gray-900 dark:text-gray-100">${coupon.type === 'percentage' ? coupon.value + '%' : '৳' + coupon.value}</td>
+                    <td class="px-6 py-4 text-gray-500">${coupon.expiryDate || 'No expiry'}</td>
+                    <td class="px-6 py-4 text-gray-500">
+                        <span class="font-bold text-primary">${coupon.currentUses}</span> / ${coupon.maxUses || '∞'}
+                    </td>
+                    <td class="px-6 py-4 text-gray-500">${coupon.type === 'percentage' ? '৳' + coupon.maxDiscount : 'N/A'}</td>
                     <td class="px-6 py-4">
                         <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" ${order.isPaid ? 'checked' : ''} class="sr-only peer" onchange="togglePaid('${order.id}', this.checked)">
+                            <input type="checkbox" ${coupon.isActive ? 'checked' : ''} class="sr-only peer" onchange="toggleStatus('${coupon.id}', this.checked)">
                             <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
                         </label>
                     </td>
-                    <td class="px-6 py-4">
-                        <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusClass(order.status)}">
-                            ${order.status}
-                        </span>
-                    </td>
                     <td class="px-6 py-4 text-right space-x-2">
-                        <a href="/add-order?id=${order.id}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-primary transition-all">
+                        <a href="/add-coupon?id=${coupon.id}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-primary transition-all">
                             <span class="material-symbols-outlined text-sm">edit</span>
                         </a>
-                        <button onclick="deleteOrder('${order.id}')" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/10 text-red-400 hover:text-red-600 transition-all">
+                        <button onclick="deleteCoupon('${coupon.id}')" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/10 text-red-400 hover:text-red-600 transition-all">
                             <span class="material-symbols-outlined text-sm">delete</span>
                         </button>
                     </td>
@@ -259,65 +242,42 @@
             `).join('');
         }
 
-        function getStatusClass(status) {
-            switch(status) {
-                case 'Pending': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
-                case 'Confirmed': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
-                case 'Shipped': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
-                case 'Delivered': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
-                case 'Cancelled': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
-                default: return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400';
-            }
-        }
-
-        async function togglePaid(id, isPaid) {
+        async function toggleStatus(id, isActive) {
             try {
-                const res = await fetch(`/api/orders/${id}`, {
+                const res = await fetch(`/api/coupons/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ isPaid })
+                    body: JSON.stringify({ isActive })
                 });
                 if (res.ok) {
-                    showToast(isPaid ? 'Order marked as paid' : 'Order marked as unpaid');
+                    showToast(isActive ? 'Coupon activated' : 'Coupon deactivated');
                 } else {
-                    showToast('Failed to update payment status', 'error');
+                    showToast('Failed to update status', 'error');
                 }
             } catch (error) {
                 showToast('Request failed', 'error');
             }
         }
 
-        async function deleteOrder(id) {
-            if (!confirm('Are you sure you want to delete this order?')) return;
+        async function deleteCoupon(id) {
+            if (!confirm('Are you sure you want to delete this coupon?')) return;
             try {
-                const res = await fetch(`/api/orders/${id}`, { method: 'DELETE' });
+                const res = await fetch(`/api/coupons/${id}`, { method: 'DELETE' });
                 if (res.ok) {
-                    showToast('Order deleted successfully');
-                    fetchOrders();
+                    showToast('Coupon deleted successfully');
+                    fetchCoupons();
                 }
             } catch (error) {
-                showToast('Failed to delete order', 'error');
+                showToast('Failed to delete coupon', 'error');
             }
         }
 
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
-            const filtered = allOrders.filter(o => 
-                o.customerName?.toLowerCase().includes(term) || 
-                o.phone?.includes(term) || 
-                o.id.toLowerCase().includes(term)
+            const filtered = allCoupons.filter(c => 
+                c.code.toLowerCase().includes(term)
             );
-            renderOrders(filtered);
-        });
-
-        document.getElementById('statusFilter').addEventListener('change', (e) => {
-            const status = e.target.value;
-            if (status === 'all') {
-                renderOrders(allOrders);
-            } else {
-                const filtered = allOrders.filter(o => o.status === status);
-                renderOrders(filtered);
-            }
+            renderCoupons(filtered);
         });
 
         // Prevent Enter key from submitting
@@ -327,42 +287,7 @@
             }
         });
 
-        async function exportOrders() {
-            try {
-                const response = await fetch('/api/orders');
-                const data = await response.json();
-                
-                if (data.length > 0) {
-                    const formattedData = data.map(order => {
-                        const row = {
-                            'Order ID': order.id,
-                            'Date': new Date(order.createdAt).toLocaleString(),
-                            'Customer Name': order.customerName,
-                            'Phone': order.phone,
-                            'Address': order.address,
-                            'Total Amount': order.totalAmount,
-                            'Status': order.status,
-                            'Payment Method': order.paymentMethod,
-                            'Items': order.items ? order.items.map(i => `${i.productName} (${i.variant}) x${i.quantity}`).join(', ') : ''
-                        };
-                        return row;
-                    });
-
-                    const ws = XLSX.utils.json_to_sheet(formattedData);
-                    const wb = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(wb, ws, "Orders");
-                    XLSX.writeFile(wb, `CoffeeLab_Orders_${new Date().toISOString().split('T')[0]}.xlsx`);
-                    showToast('Orders exported successfully');
-                } else {
-                    showToast('No orders found to export', 'error');
-                }
-            } catch (error) {
-                console.error(error);
-                showToast('Failed to export orders', 'error');
-            }
-        }
-
-        window.onload = fetchOrders;
+        window.onload = fetchCoupons;
     </script>
 </body>
 </html>
