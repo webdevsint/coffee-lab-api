@@ -26,6 +26,13 @@ const db = require("./db");
 const optimizeImages = require("./imageOptimizer");
 
 const app = express();
+const cors = require("cors");
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
