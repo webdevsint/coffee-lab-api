@@ -20,7 +20,12 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage: storage,
+  limits: {
+    fieldSize: 50 * 1024 * 1024, // 50MB limit for text fields (e.g. blog body)
+  },
+});
 
 const db = require("./db");
 const optimizeImages = require("./imageOptimizer");
@@ -119,6 +124,12 @@ app.post("/api/logout", (req, res) => {
 
 const uploadsPath = path.join(__dirname, "uploads");
 app.use("/uploads", express.static(uploadsPath));
+
+// Standalone image upload (for Quill editor inline images)
+app.post("/api/upload", upload.single("image"), optimizeImages, (req, res) => {
+  if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+  res.json({ url: `/uploads/${req.file.filename}` });
+});
 
 // Serve static assets (CSS, JS, images)
 app.use(
@@ -250,7 +261,53 @@ app.post("/api/blogs", upload.single("image"), optimizeImages, (req, res) => {
   );
 });
 
-app.post("/api/orders", (req, res) => {
+const validateOrder = (req, res, next) => {
+  const {
+    customerName,
+    phone,
+    address,
+    items,
+    totalAmount,
+    paymentMethod,
+    isPaid,
+  } = req.body;
+
+  const errors = [];
+  if (!customerName) errors.push("customerName is required");
+  if (!phone) errors.push("phone is required");
+  if (!address) errors.push("address is required");
+  if (!paymentMethod) errors.push("paymentMethod is required");
+  if (!totalAmount || isNaN(parseFloat(totalAmount)))
+    errors.push("totalAmount must be a valid number");
+
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    errors.push("items must be a non-empty array");
+  } else {
+    items.forEach((item, index) => {
+      if (!item.productId) errors.push(`Item ${index}: productId is required`);
+      if (!item.productName)
+        errors.push(`Item ${index}: productName is required`);
+      if (!item.quantity || isNaN(parseInt(item.quantity)))
+        errors.push(`Item ${index}: quantity must be a valid number`);
+      if (!item.price || isNaN(parseFloat(item.price)))
+        errors.push(`Item ${index}: price must be a valid number`);
+    });
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({ success: false, errors });
+  }
+
+  // Ensure isPaid is a boolean
+  req.body.isPaid =
+    req.body.isPaid === true ||
+    req.body.isPaid === "true" ||
+    req.body.isPaid === 1;
+
+  next();
+};
+
+app.post("/api/orders", validateOrder, (req, res) => {
   const newItem = db.create("orders", req.body);
   res.json({ message: "Order placed successfully", payload: newItem });
 });
@@ -353,7 +410,7 @@ app.put("/api/coupons/:identifier", (req, res) => {
   res.json({ message: "Coupon updated successfully", payload: updatedItem });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`[${new Date().toISOString()}] Server running on port ${PORT}`);
 });

@@ -147,6 +147,13 @@ const db = {
           ? JSON.parse(item.items)
           : item.items || [];
       newItem.totalAmount = parseFloat(item.totalAmount) || 0;
+      newItem.isPaid = item.isPaid === true || item.isPaid === "true";
+
+      // Remove irrelevant fields added by generic logic
+      delete newItem.slug;
+      delete newItem.keywords;
+      delete newItem.images;
+      delete newItem.isFeatured;
     }
 
     // Coupon specific enhancements

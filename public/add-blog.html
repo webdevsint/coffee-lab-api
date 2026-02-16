@@ -313,16 +313,45 @@
                 theme: 'snow',
                 placeholder: 'Write your masterpiece here...',
                 modules: {
-                    toolbar: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        ['blockquote', 'code-block'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'script': 'sub'}, { 'script': 'super' }],
-                        [{ 'indent': '-1'}, { 'indent': '+1' }],
-                        ['link', 'image', 'video'],
-                        ['clean']
-                    ]
+                    toolbar: {
+                        container: [
+                            [{ 'header': [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline', 'strike'],
+                            ['blockquote', 'code-block'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            [{ 'script': 'sub'}, { 'script': 'super' }],
+                            [{ 'indent': '-1'}, { 'indent': '+1' }],
+                            ['link', 'image', 'video'],
+                            ['clean']
+                        ],
+                        handlers: {
+                            image: function() {
+                                const input = document.createElement('input');
+                                input.setAttribute('type', 'file');
+                                input.setAttribute('accept', 'image/*');
+                                input.click();
+                                input.onchange = async () => {
+                                    const file = input.files[0];
+                                    if (!file) return;
+                                    const formData = new FormData();
+                                    formData.append('image', file);
+                                    try {
+                                        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                        const data = await res.json();
+                                        if (data.url) {
+                                            const range = quill.getSelection(true);
+                                            quill.insertEmbed(range.index, 'image', data.url);
+                                            quill.setSelection(range.index + 1);
+                                        } else {
+                                            showToast('Image upload failed', 'error');
+                                        }
+                                    } catch (err) {
+                                        showToast('Image upload failed. Check your connection.', 'error');
+                                    }
+                                };
+                            }
+                        }
+                    }
                 }
             });
 
